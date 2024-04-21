@@ -10,7 +10,6 @@ import com.mxgraph.util.mxUtils;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
-import org.jgrapht.nio.ImportException;
 import org.jgrapht.nio.dimacs.DIMACSImporter;
 import org.jgrapht.util.SupplierUtil;
 
@@ -82,26 +81,6 @@ public class CustomWeightedGraph {
         //SimpleWeightedGraph<String, CustomWeightedGraph.CustomWeightedEdge> customGraph = graph.;
         //this.savingDIMACSGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph3.png");
         this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph4.png");
-    }
-
-    public void savingDIMACSGraphVisualizationToFile(SimpleWeightedGraph<Integer, DefaultWeightedEdge> graph, String path) {
-        JGraphXAdapter<Integer, DefaultWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
-
-        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
-        //usuwanie strzałek z wizualizacji
-        mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
-        mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
-        Collection<Object> cells =  graphModel.getCells().values();
-        mxUtils.setCellStyles(graphComponent.getGraph().getModel(), cells.toArray(), mxConstants.STYLE_ENDARROW, mxConstants.NONE);
-
-        mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
-        layout.execute(graphAdapter.getDefaultParent());
-
-        BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, Color.WHITE, false, null);
-        File imgFile = new File(path);
-        try {
-            ImageIO.write(image, "PNG", imgFile);
-        } catch (IOException error) {}
     }
 
     public void savingGraphVisualizationToFile(SimpleWeightedGraph<String, CustomWeightedEdge> graph, String path) {
