@@ -36,4 +36,7 @@ target/
 instances/
 
 #App
-images/
+AntColouringMetaheuristic/AntColouring/src/main/java/pl/polsl/images
+BeesRoutingMetaheuristic/BeesRouting/src/main/java/pl/polsl/images
+CuckooBehaviourMetaheuristic/CuckooBehaviour/src/main/java/pl/polsl/images
+StorkFeedingMetaheuristic/StorkFeeding/src/main/java/pl/polsl/images
