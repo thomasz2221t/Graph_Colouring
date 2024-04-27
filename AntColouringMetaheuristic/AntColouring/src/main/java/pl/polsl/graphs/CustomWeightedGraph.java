@@ -7,15 +7,21 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxUtils;
+import org.jgrapht.Graph;
 import org.jgrapht.ext.JGraphXAdapter;
-import org.jgrapht.graph.*;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultUndirectedGraph;
+import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.nio.dimacs.DIMACSImporter;
 import org.jgrapht.util.SupplierUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.NotDirectoryException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +57,34 @@ public class CustomWeightedGraph {
         this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph2.png");
     }
 
+    public ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> importDIMACSBenchmarkDataset(String folderPath) {
+        ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> dimacsDataset = new ArrayList<>();
+        DIMACSImporter<String, CustomWeightedEdge> dimacsImporter = new DIMACSImporter<>();
+        try{
+            File dimacsFolder = new File(folderPath);
+            if(dimacsFolder.isDirectory()) {
+                for(final File dimacsFile : dimacsFolder.listFiles()) {
+                    if(!dimacsFile.isDirectory()) {
+                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
+                        try {
+                            dimacsImporter.importGraph(graph, dimacsFile);
+                            dimacsDataset.add(graph);
+//                            System.out.println("Good file:" + dimacsFile.getPath());
+                        } catch (Exception e) {
+//                            System.out.println(dimacsFile.getPath());
+                            System.err.println("Exception: DIMACS file " + dimacsFile.getPath() + " corrupted");
+                        }
+                    }
+                }
+            } else {
+                throw new NotDirectoryException("Given path does not lead to directory");
+            }
+        } catch(NotDirectoryException e) {
+            System.err.println("Exception: Unable to open DIMACS graphs directory");
+        }
+        return dimacsDataset;
+    }
+
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> importGraphInDIMACSFormat(String filePath) {
         DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
         DIMACSImporter<String, CustomWeightedEdge> dimacsImporter = new DIMACSImporter<>();
@@ -58,7 +92,6 @@ public class CustomWeightedGraph {
         try{
             File dimacsFile = new File(filePath);
             if(dimacsFile.exists()) {
-                System.out.println(dimacsFile.exists());
                 dimacsImporter.importGraph(graph, dimacsFile);
             } else {
                 throw new FileNotFoundException("File does not exist");
@@ -74,90 +107,68 @@ public class CustomWeightedGraph {
         return graph;
     }
 
-    public DefaultUndirectedGraph<String, DefaultEdge> testImportForUndirected(String filePath) {
-        DefaultUndirectedGraph<String, DefaultEdge> graph = new DefaultUndirectedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createDefaultEdgeSupplier(), false);
+    public ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> importDIMACSDatasetUnweightedGraphsAsWeighted(String folderPath) {
+        ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> dimacsDataset = new ArrayList<>();
+        DIMACSImporter<String, DefaultEdge> dimacsImporter = new DIMACSImporter<>();
+        try {
+            File dimacsFolder = new File(folderPath);
+            if (dimacsFolder.isDirectory()) {
+                for (final File dimacsFile : dimacsFolder.listFiles()) {
+                    if (!dimacsFile.isDirectory()) {
+                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graphWeighted = new DefaultUndirectedWeightedGraph<>(
+                                SupplierUtil.createStringSupplier(),
+                                SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
+                        DefaultUndirectedGraph<String, DefaultEdge> graphUnweighted = new DefaultUndirectedGraph<>(
+                                SupplierUtil.createStringSupplier(),
+                                SupplierUtil.createDefaultEdgeSupplier(),
+                                false);
+                        try {
+                            dimacsImporter.importGraph(graphUnweighted, dimacsFile);
+                            graphWeighted = this.convert(graphUnweighted);
+                            dimacsDataset.add(graphWeighted);
+                        } catch (Exception e) {
+                            System.err.println("Exception: DIMACS file " + dimacsFile.getPath() + " corrupted");
+                        }
+                    }
+                }
+            } else {
+                throw new NotDirectoryException("Given path does not lead to directory");
+            }
+        } catch (NotDirectoryException e) {
+            System.err.println("Exception: Unable to open DIMACS graphs directory");
+        }
+        return dimacsDataset;
+    }
+
+    public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> importDIMACSUnweightedGraphAsWeighted(String filePath) {
+        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> weightedGraph = new DefaultUndirectedWeightedGraph<>(
+                SupplierUtil.createStringSupplier(),
+                SupplierUtil.createSupplier(
+                        CustomWeightedGraph.CustomWeightedEdge.class
+                ));
         DIMACSImporter<String, DefaultEdge> dimacsImporter = new DIMACSImporter<>();
 
         try{
             File dimacsFile = new File(filePath);
             if(dimacsFile.exists()) {
-                System.out.println(dimacsFile.exists());
-                dimacsImporter.importGraph(graph, dimacsFile);
+                DefaultUndirectedGraph<String, DefaultEdge> unweightedGraph = new DefaultUndirectedGraph<>(
+                        SupplierUtil.createStringSupplier(),
+                        SupplierUtil.createDefaultEdgeSupplier(),
+                        false);
+                dimacsImporter.importGraph(unweightedGraph, dimacsFile);
+                weightedGraph = this.convert(unweightedGraph);
             } else {
                 throw new FileNotFoundException("File does not exist");
             }
-        } /*catch(NullPointerException e) {
+        } catch(NullPointerException e) {
             System.err.println("Exception: Unable to open DIMACS file, pathname is null.");
-        }*/ catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.err.println("Exception: Unable to open DIMACS file, file not found.");
         }
 
-        System.out.println(graph.toString());
-        //this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graphtest.png");
-        return graph;
-    }
-
-    public ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> importDIMACSBenchmarkDatasetAsUndirected(String folderPath) {
-        ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> dimacsDataset = new ArrayList<>();
-        DIMACSImporter<String, DefaultEdge> dimacsImporter = new DIMACSImporter<>();
-        try{
-            File dimacsFolder = new File(folderPath);
-            if(dimacsFolder.isDirectory()) {
-                for(final File dimacsFile : dimacsFolder.listFiles()) {
-                    if(!dimacsFile.isDirectory()) {
-                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graphWeighted = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
-                        DefaultUndirectedGraph<String, DefaultEdge> graphUnweighted = new DefaultUndirectedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createDefaultEdgeSupplier(), false);
-                        try {
-                            dimacsImporter.importGraph(graphUnweighted, dimacsFile);
-                            //TODO: Casting undirected graph to directed (e. g. by iterating thorugh verticies and also setting 1.0 wage)
-                            //graphWeighted = graphUnweighted.iterables()
-                            dimacsDataset.add(graphWeighted);
-                            System.out.println("//=========================================================");
-                            System.out.println(graphUnweighted);
-                            System.out.println(graphWeighted);
-                            System.out.println("//=========================================================");
-                            System.out.println("Good file:" + dimacsFile.getPath());
-                        } catch (Exception e) {
-                            System.out.println(dimacsFile.getPath());
-                            System.err.println("Exception: DIMACS file " + dimacsFile.getPath() + " corrupted");
-                        }
-                    }
-                }
-            } else {
-                throw new NotDirectoryException("Given path does not lead to directory");
-            }
-        } catch(NotDirectoryException e) {
-            System.err.println("Exception: Unable to open DIMACS graphs directory");
-        }
-        return dimacsDataset;
-    }
-
-    public ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> importDIMACSBenchmarkDatasetAsDirected(String folderPath) {
-        ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> dimacsDataset = new ArrayList<>();
-        DIMACSImporter<String, CustomWeightedEdge> dimacsImporter = new DIMACSImporter<>();
-        try{
-            File dimacsFolder = new File(folderPath);
-            if(dimacsFolder.isDirectory()) {
-                for(final File dimacsFile : dimacsFolder.listFiles()) {
-                    if(!dimacsFile.isDirectory()) {
-                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
-                        try {
-                            dimacsImporter.importGraph(graph, dimacsFile);
-                            dimacsDataset.add(graph);
-                            System.out.println("Good file:" + dimacsFile.getPath());
-                        } catch (Exception e) {
-                            System.out.println(dimacsFile.getPath());
-                            System.err.println("Exception: DIMACS file " + dimacsFile.getPath() + " corrupted");
-                        }
-                    }
-                }
-            } else {
-                throw new NotDirectoryException("Given path does not lead to directory");
-            }
-        } catch(NotDirectoryException e) {
-            System.err.println("Exception: Unable to open DIMACS graphs directory");
-        }
-        return dimacsDataset;
+        System.out.println(weightedGraph.toString());
+        this.savingGraphVisualizationToFile(weightedGraph, "src/main/java/pl/polsl/images/graphtest.png");
+        return weightedGraph;
     }
 
     public void savingGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String path) {
@@ -178,5 +189,28 @@ public class CustomWeightedGraph {
         try {
             ImageIO.write(image, "PNG", imgFile);
         } catch (IOException error) {}
+    }
+
+    private static <V, Vv, E> DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> convert(Graph<V, E> source) {
+        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> result = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
+        //source.vertexSet().forEach(v -> result.addVertex(vertexMapper.apply(v)));
+        source.edgeSet()
+                .forEach(
+                        e -> {
+                            String sourceV = (String) source.getEdgeSource(e);
+                            //Vv mappedSourceV = vertexMapper.apply(sourceV);
+                            String targetV = (String) source.getEdgeTarget(e);
+                            //Vv mappedTargetV = vertexMapper.apply(targetV);
+                            //result.addVertex(mappedSourceV);
+                            //result.addVertex(mappedTargetV);
+                            //CustomWeightedEdge ee = result.addEdge(mappedSourceV, mappedTargetV);
+                            result.addVertex(sourceV);
+                            result.addVertex(targetV);
+                            CustomWeightedEdge ee = result.addEdge(sourceV, targetV);
+                            //double edgeWeight = source.getEdgeWeight(e);
+                            double edgeWeight = 1.0;
+                            result.setEdgeWeight(ee, edgeWeight);
+                        });
+        return result;
     }
 }

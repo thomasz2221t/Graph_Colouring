@@ -2,8 +2,6 @@ package pl.polsl;
 
 import pl.polsl.graphs.CustomWeightedGraph;
 
-import java.util.ArrayList;
-
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello world!");
@@ -16,8 +14,9 @@ public class Main {
 //        for (final DefaultUndirectedWeightedGraph<String, CustomWeightedGraph.CustomWeightedEdge> graph: dimacsDataset) {
 //            System.out.println(graph);
 //        }
-        customWeightedGraph.importDIMACSBenchmarkDatasetAsUndirected("D:\\GraphColouring\\instances\\anna.col");
-        final var dimacsDataset =customWeightedGraph.importDIMACSBenchmarkDatasetAsUndirected("D:\\GraphColouring\\instances");
-        System.out.println(dimacsDataset.size());
+        customWeightedGraph.importGraphInDIMACSFormat("D:\\GraphColouring\\instances\\myciel3.col");
+        customWeightedGraph.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel3.col");
+//        final var dimacsDataset = customWeightedGraph.importDIMACSBenchmarkDatasetAsUndirected("D:\\GraphColouring\\instances");
+//        System.out.println(dimacsDataset.size());
     }
 }
