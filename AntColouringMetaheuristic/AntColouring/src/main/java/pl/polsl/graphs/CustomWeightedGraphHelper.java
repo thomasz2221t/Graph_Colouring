@@ -24,10 +24,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NotDirectoryException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class CustomWeightedGraphHelper {
@@ -176,17 +174,17 @@ public class CustomWeightedGraphHelper {
     }
 
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> imposeUncertaintyToGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, float proportionOfEdgesToFuzz, float lowerBoundaryOfUncertainty){
-        Object[] edgeArray = graph.vertexSet().toArray();
+        List<CustomWeightedEdge> edgeList = graph.edgeSet().stream().toList();
         int numberOfEdgesToFuzz = 0;
         try {
             if (proportionOfEdgesToFuzz >= 0 && proportionOfEdgesToFuzz <= 1) {
-                numberOfEdgesToFuzz = Math.round(edgeArray.length * proportionOfEdgesToFuzz);
+                numberOfEdgesToFuzz = Math.round(edgeList.size() * proportionOfEdgesToFuzz);
             } else {
                 throw new ProportionOutOfRange("Edge fuzz proportion out of range");
             }
 
             Set<Integer> randomValues = new Random()
-                    .ints(0,edgeArray.length)
+                    .ints(0, edgeList.size())
                     .limit(numberOfEdgesToFuzz)
                     .boxed()
                     .collect(Collectors.toSet());
@@ -194,10 +192,7 @@ public class CustomWeightedGraphHelper {
                 Random uncertaintyGenerator = new Random();
                 double uncertaintyValue = uncertaintyGenerator.nextDouble(
                         1 - lowerBoundaryOfUncertainty) + lowerBoundaryOfUncertainty;
-                edgeArray.
-                DefaultWeightedEdge chosenEdge = (DefaultWeightedEdge) edgeArray[edgeIndex];
-                System.out.println(edgeArray[edgeIndex].getClass().toString());
-                graph.setEdgeWeight((CustomWeightedEdge) chosenEdge, uncertaintyValue);
+                graph.setEdgeWeight(edgeList.get(edgeIndex), uncertaintyValue);
             }
         } catch(ProportionOutOfRange e) {
             System.err.println(e.getMessage());

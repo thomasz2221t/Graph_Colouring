@@ -13,9 +13,10 @@ public class AntColouringHeuristic {
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> colourTheGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
-        prepareGraph(graph, PROPORTION_EDGES_TO_FUZZ, LOWER_BOUNDARY_OF_UNCERTAINTY);//przygotowanie grafu
-        customWeightedGraphHelper.savingGraphVisualizationToFile(graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"uncertainty");
-            //Losowy wybór krawędzi które będą miały zmienione losowo wagi
+        //przygotowanie grafu
+        prepareGraph(graph, PROPORTION_EDGES_TO_FUZZ, LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
+        customWeightedGraphHelper.savingGraphVisualizationToFile(graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"uncertainty.png");
+
 
         //spawn mrówek
 
