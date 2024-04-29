@@ -1,5 +1,10 @@
 package pl.polsl.agents;
 
-public class AntAgent {
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+public class AntAgent {
+    public String currentVertex;
 }

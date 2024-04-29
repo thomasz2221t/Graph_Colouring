@@ -20,6 +20,6 @@ public class Main {
 //        final var dimacsDataset = customWeightedGraph.importDIMACSBenchmarkDatasetAsUndirected("D:\\GraphColouring\\instances");
 //        System.out.println(dimacsDataset.size());
         AntColouringHeuristic antColouringHeuristic = new AntColouringHeuristic(customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel3.col"));
-        antColouringHeuristic.colourTheGraph(antColouringHeuristic.graph);
+        antColouringHeuristic.colourTheGraph();
     }
 }
