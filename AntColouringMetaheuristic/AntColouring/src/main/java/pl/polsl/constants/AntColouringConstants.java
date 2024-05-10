@@ -4,5 +4,7 @@ public final class AntColouringConstants {
 
     private AntColouringConstants() {}
 
-    public static final long AntColouringConstants = 10000;
+    public static final long AntColouringMaxIterations = 10000;
+
+    public static final double AntColouringMinRobustness = 0.30;
 }

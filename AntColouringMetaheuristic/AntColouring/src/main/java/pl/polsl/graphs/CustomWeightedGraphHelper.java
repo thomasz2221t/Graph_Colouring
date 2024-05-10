@@ -200,6 +200,29 @@ public class CustomWeightedGraphHelper {
         return graph;
     }
 
+    public String getRandomVertexFromGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
+        List<String> vertexList = graph.vertexSet().stream().toList();
+        Random random = new Random();
+        return vertexList.get(random.nextInt(vertexList.size()));
+    }
+
+    public Map<String, CustomWeightedEdge> getNeighbourhoodListOfVertex(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String vertexName) {
+        List<CustomWeightedEdge> vertexEdges = graph.edgesOf(vertexName).stream().toList();
+        Map<String, CustomWeightedEdge> vertexNeighbourhoodList = new HashMap<>();
+        for(CustomWeightedEdge edge : vertexEdges) {
+            String edgeSource = graph.getEdgeSource(edge);
+            String edgeTarget = graph.getEdgeTarget(edge);
+            if(edgeSource != vertexName) {
+                vertexNeighbourhoodList.put(edgeSource, edge);
+            } else if(edgeTarget != vertexName) {
+                vertexNeighbourhoodList.put(edgeTarget, edge);
+            } else {
+                System.err.println("Exception: Getting vertex neighbourhood list method found vertex with self referencing edge");
+            }
+        }
+        return vertexNeighbourhoodList;
+    }
+
     public void savingGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String path) {
         JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
 
