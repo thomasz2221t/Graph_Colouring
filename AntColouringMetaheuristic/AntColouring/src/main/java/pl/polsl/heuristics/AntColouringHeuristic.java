@@ -18,6 +18,8 @@ public class AntColouringHeuristic {
     public final float PROPORTION_EDGES_TO_FUZZ = 0.33f;
     public final float LOWER_BOUNDARY_OF_UNCERTAINTY = 0.60f;
     public final int MINIMAL_ROBUST_COLOUR_NUMBER = 1;
+    public final double PASSING_PROBABILITY_HEURISTIC_WEIGHT = 0.35;
+    public final double PASSING_PROBABILITY_PHEROMONE_WEIGHT = 1.0;
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
     private Map<String, Integer> verticesColourMap = new HashMap<>();
     private Map<Integer, Integer> coloursMap = new HashMap<>();
@@ -56,11 +58,18 @@ public class AntColouringHeuristic {
                 //tablica lokalnych przejść mrówki
                 Map<String, CustomWeightedEdge> vertexNeighbourhoodList = customWeightedGraphHelper.
                         getNeighbourhoodListOfVertex(this.graph, ant.getCurrentVertex());
+                //=====
                 //Nadaj kolor
                 this.assignColourToVertex(ant, vertexNeighbourhoodList);
                 //====
                 //obliczenie wag przejscia
-                Map<String, Double> passingProbabilitesMap = this.calculateAntPassingProbabilities(ant, vertexNeighbourhoodList);
+                Map<String, Double> passingProbabilityMap = this.calculateAntPassingProbabilities(graph,
+                        ant,
+                        vertexNeighbourhoodList,
+                        PASSING_PROBABILITY_HEURISTIC_WEIGHT,
+                        PASSING_PROBABILITY_PHEROMONE_WEIGHT);
+                //====
+                //update feromonu
                 //====
                 //while coloring isnt valid select higher probability node
             }
@@ -120,17 +129,42 @@ public class AntColouringHeuristic {
        this.verticesColourMap.replace(ant.currentVertex, minimalColourIndex);
     }
 
-    private Map<String, Double> calculateAntPassingProbabilities(AntAgent ant,  Map<String, CustomWeightedEdge> vertexNeighbourhoodList) {
+    private Map<String, Double> calculateAntPassingProbabilities(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, AntAgent ant,  Map<String, CustomWeightedEdge> vertexNeighbourhoodList, double heuristicInformationWeight, double pheromoneWeight) {
         List<String> antMemory = ant.getVisitedVertexMemory();
         final Map<CustomWeightedEdge, Double> pheromone = this.pheromoneMap;
         Map<String, Double> passingProbabilities = new HashMap<>();
+        double unvisitedNeighboursPheromoneAndProbabilitySum = 0.0;
         for (String vertex: vertexNeighbourhoodList.keySet()) {
+            //find edge
+            CustomWeightedEdge edge = graph.getEdge(ant.currentVertex, vertex) != null
+                    ? graph.getEdge(ant.currentVertex, vertex)
+                    : graph.getEdge(vertex, ant.currentVertex);
             //obliczenie informacji heurystycznej
-
+            //1/ilosc_wierzcholkow + solidnosc
+            double robustness = graph.getEdgeWeight(edge);
+            int numberOfPotentialRoutes = customWeightedGraphHelper.getNeighbourhoodListOfVertex(graph, vertex).size();
+            double heuristicInformation = robustness/numberOfPotentialRoutes;
             //obliczenie feromonu
-            if(antMemory.contains(vertex)){ //visited
-
+            double edgePheromone = pheromone.get(edge);
+            //obliczenie feromonu i informacji heurystycznej
+            double probabilityContentsMultiplication = (heuristicInformationWeight* heuristicInformation) * (pheromoneWeight*edgePheromone);
+            if(!antMemory.contains(vertex)){ //unvisited
+                unvisitedNeighboursPheromoneAndProbabilitySum += probabilityContentsMultiplication;
             }
+            passingProbabilities.put(vertex, probabilityContentsMultiplication);
+        }
+        //divide passing probability by unvisited nodes
+        for(String vertex : passingProbabilities.keySet()) {
+            double unvisitedSumTemp = unvisitedNeighboursPheromoneAndProbabilitySum;
+            double probabilityContentsValue = passingProbabilities.get(vertex);
+            //if vertex was unvisited subtract its value
+            if(!antMemory.contains(vertex)) {
+                unvisitedSumTemp -= probabilityContentsValue;
+            }
+            //watch out for dividing by zero
+            unvisitedSumTemp = unvisitedSumTemp > 0.0 ? unvisitedSumTemp : 1;
+            double probabilityValue = probabilityContentsValue / unvisitedSumTemp;
+            passingProbabilities.replace(vertex, probabilityValue);
         }
         return passingProbabilities;
     }
