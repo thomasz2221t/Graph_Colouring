@@ -11,19 +11,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AntColouringHeuristic {
-    public final int NUMBER_OF_AGENTS = 3;
-    public final float PROPORTION_EDGES_TO_FUZZ = 0.33f;
-    public final float LOWER_BOUNDARY_OF_UNCERTAINTY = 0.60f;
-    public final int MINIMAL_ROBUST_COLOUR_NUMBER = 1;
-    public final double PASSING_PROBABILITY_HEURISTIC_WEIGHT = 0.35;
-    public final double PASSING_PROBABILITY_PHEROMONE_WEIGHT = 1.0;
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
     private Map<String, Integer> verticesColourMap = new HashMap<>();
     private Map<Integer, Integer> coloursMap = new HashMap<>();
-    private Map<CustomWeightedEdge, Double> pheromoneMap = new HashMap<>();
+    private Map<String, Double> pheromoneMap = new HashMap<>();
     private List<AntAgent> ants = new ArrayList<>();
     private Double robustness = Double.valueOf(0);
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
@@ -33,7 +26,7 @@ public class AntColouringHeuristic {
         /////Przygotowanie zasobów/////
         //////////////////////////////
         //przygotowanie grafu
-        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph, PROPORTION_EDGES_TO_FUZZ, LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
+        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph, GraphConstants.PROPORTION_EDGES_TO_FUZZ, GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
         //only for testing
         customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"uncertainty.png");
         //Przygotowanie mapy koloru Map<V,Integer> (Interface VertexColoringAlgorithm.Coloring<V>)
@@ -43,7 +36,7 @@ public class AntColouringHeuristic {
         //Przygotowanie mapy feromonu
         this.initPheromoneMap(this.graph, this.pheromoneMap);
         //spawn mrówek
-        this.initAnts(this.ants, this.NUMBER_OF_AGENTS);
+        this.initAnts(this.ants, AntColouringConstants.NUMBER_OF_AGENTS);
 
         long i = 0;
         //pętla while
@@ -66,10 +59,11 @@ public class AntColouringHeuristic {
                 Map<String, Double> passingProbabilityMap = this.calculateAntPassingProbabilities(graph,
                         ant,
                         vertexNeighbourhoodList,
-                        PASSING_PROBABILITY_HEURISTIC_WEIGHT,
-                        PASSING_PROBABILITY_PHEROMONE_WEIGHT);
+                        AntColouringConstants.PASSING_PROBABILITY_HEURISTIC_WEIGHT,
+                        AntColouringConstants.PASSING_PROBABILITY_PHEROMONE_WEIGHT);
                 //====
                 //update feromonu
+                updatePheromoneTrail();
                 //====
                 //while coloring isnt valid select higher probability node
             }
@@ -89,10 +83,10 @@ public class AntColouringHeuristic {
         return verticesColourMap;
     }
 
-    private Map<CustomWeightedEdge, Double> initPheromoneMap(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<CustomWeightedEdge, Double> pheromoneMap) {
-        List<CustomWeightedEdge> edgeList = graph.edgeSet().stream().toList();
-        for (CustomWeightedEdge edge: edgeList) {
-            pheromoneMap.put(edge, 0.0);
+    private Map<String, Double> initPheromoneMap(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Double> pheromoneMap) {
+        List<String> vertexList = graph.vertexSet().stream().toList();
+        for (String vertex: vertexList) {
+            pheromoneMap.put(vertex, 0.0);
         }
         return pheromoneMap;
     }
@@ -105,7 +99,7 @@ public class AntColouringHeuristic {
     }
 
     private void initColourList() {
-        for(int i=0; i<=MINIMAL_ROBUST_COLOUR_NUMBER; i++)
+        for(int i = 0; i <= AntColouringConstants.MINIMAL_ROBUST_COLOUR_NUMBER; i++)
             this.coloursMap.put(i,0);
     }
 
@@ -131,7 +125,7 @@ public class AntColouringHeuristic {
 
     private Map<String, Double> calculateAntPassingProbabilities(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, AntAgent ant,  Map<String, CustomWeightedEdge> vertexNeighbourhoodList, double heuristicInformationWeight, double pheromoneWeight) {
         List<String> antMemory = ant.getVisitedVertexMemory();
-        final Map<CustomWeightedEdge, Double> pheromone = this.pheromoneMap;
+        final Map<String, Double> pheromone = this.pheromoneMap;
         Map<String, Double> passingProbabilities = new HashMap<>();
         double unvisitedNeighboursPheromoneAndProbabilitySum = 0.0;
         for (String vertex: vertexNeighbourhoodList.keySet()) {
@@ -145,9 +139,9 @@ public class AntColouringHeuristic {
             int numberOfPotentialRoutes = customWeightedGraphHelper.getNeighbourhoodListOfVertex(graph, vertex).size();
             double heuristicInformation = robustness/numberOfPotentialRoutes;
             //obliczenie feromonu
-            double edgePheromone = pheromone.get(edge);
+            double pheromoneValue = pheromone.get(vertex);
             //obliczenie feromonu i informacji heurystycznej
-            double probabilityContentsMultiplication = (heuristicInformationWeight* heuristicInformation) * (pheromoneWeight*edgePheromone);
+            double probabilityContentsMultiplication = (heuristicInformationWeight * heuristicInformation) * (pheromoneWeight * pheromoneValue);
             if(!antMemory.contains(vertex)){ //unvisited
                 unvisitedNeighboursPheromoneAndProbabilitySum += probabilityContentsMultiplication;
             }
@@ -167,6 +161,27 @@ public class AntColouringHeuristic {
             passingProbabilities.replace(vertex, probabilityValue);
         }
         return passingProbabilities;
+    }
+
+    private void updatePheromoneTrail() {
+        int numberOfColors = this.coloursMap.size();
+        double pheromoneMaxValue = 1 / ((1 - AntColouringConstants.PHEROMONE_EVAPORATION_WEIGHT) * numberOfColors);
+        double pheromoneMinValue = 0.087 * pheromoneMaxValue;
+        for (String vertex : this.pheromoneMap.keySet()) {
+            double oldPheromoneValue = this.pheromoneMap.get(vertex);
+            double newPheromoneValue = 0;
+            //if vertex is coloured enhance solution if not just evaporate pheromone
+            if(this.coloursMap.get(vertex) != 0) {
+                newPheromoneValue = AntColouringConstants.PHEROMONE_EVAPORATION_WEIGHT * oldPheromoneValue
+                        + ((1 - AntColouringConstants.PHEROMONE_EVAPORATION_WEIGHT) / numberOfColors);
+            } else {
+                newPheromoneValue = AntColouringConstants.PHEROMONE_EVAPORATION_WEIGHT * oldPheromoneValue;
+            }
+            //checking min-max constraint of pheromone
+            newPheromoneValue = Math.min(newPheromoneValue, pheromoneMaxValue);
+            newPheromoneValue = Math.max(newPheromoneValue, pheromoneMinValue);
+            this.pheromoneMap.replace(vertex, newPheromoneValue);
+        }
     }
 
     public AntColouringHeuristic(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
