@@ -7,10 +7,8 @@ import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AntColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
@@ -65,9 +63,12 @@ public class AntColouringHeuristic {
                 //update feromonu
                 updatePheromoneTrail();
                 //====
-                //while coloring isnt valid select higher probability node
+                //while coloring isn't valid select higher probability node
+                //przenies mrowke
+                relocateAntToNextVertex(ant, passingProbabilityMap);
             }
             //local search
+            this.localSearchProcedure(graph);
             i++;
         }
         return graph;
@@ -181,6 +182,53 @@ public class AntColouringHeuristic {
             newPheromoneValue = Math.min(newPheromoneValue, pheromoneMaxValue);
             newPheromoneValue = Math.max(newPheromoneValue, pheromoneMinValue);
             this.pheromoneMap.replace(vertex, newPheromoneValue);
+        }
+    }
+
+    private String getHighestProbabilityRoute(Map<String, Double> passingProbabilityMap) {
+        double maxProbability = 0.0;
+        String vertexName = "";
+        for (String vertex : passingProbabilityMap.keySet()) {
+            if(passingProbabilityMap.get(vertex) > maxProbability){
+                maxProbability = passingProbabilityMap.get(vertex);
+                vertexName = vertex;
+            }
+        }
+        return vertexName;
+    }
+
+    private void relocateAntToNextVertex(AntAgent ant, Map<String, Double> passingProbabilityMap){
+        ant.memorizeNewVisitedVertex(ant.currentVertex);
+        String nextVertex = this.getHighestProbabilityRoute(passingProbabilityMap);
+        ant.setCurrentVertex(nextVertex);
+    }
+
+    private void localSearchProcedure(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
+        String randomVertex = this.customWeightedGraphHelper.getRandomVertexFromGraph(graph);//get random vertex from graph
+        //randomly select colour
+        Random random = new Random();
+        Integer randomColour = -1;
+        randomColour = random.nextInt(coloursMap.size()-1) + 1;
+        Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList = customWeightedGraphHelper.
+                getNeighbourhoodListOfVertex(this.graph, randomVertex);
+        boolean isRandomColourValid = true;
+        for (String vertex : randomVertexNeighbourhoodList.keySet()) {
+            if(verticesColourMap.get(vertex) == randomColour) {
+                isRandomColourValid = false;
+                break;
+            }
+        }
+        //check if colouring is valid, if so approve changes and update pheromone
+        if(isRandomColourValid) {
+            Integer oldColour = verticesColourMap.get(randomVertex);
+            Integer oldColouredVerticesNumber = coloursMap.get(oldColour);
+            verticesColourMap.replace(randomVertex, randomColour);
+            if(oldColouredVerticesNumber > 1) {
+                coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
+            } else {
+                coloursMap.remove(oldColour);
+            }
+            this.updatePheromoneTrail();
         }
     }
 
