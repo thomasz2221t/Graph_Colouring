@@ -10,4 +10,5 @@ public final class AntColouringConstants {
     public static final double PASSING_PROBABILITY_HEURISTIC_WEIGHT = 0.35;
     public static final double PASSING_PROBABILITY_PHEROMONE_WEIGHT = 1.0;
     public static final double PHEROMONE_EVAPORATION_WEIGHT = 0.7;
+    public static final double ROBUSTNESS_PENALTY_COLOURING_INVALID_ACCEPTABLE = 1.0;
 }
