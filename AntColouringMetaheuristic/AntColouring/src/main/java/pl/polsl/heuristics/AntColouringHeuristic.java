@@ -8,6 +8,7 @@ import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AntColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
@@ -38,7 +39,10 @@ public class AntColouringHeuristic {
         long i = 0;
         //pętla while
         //while((i < AntColouringConstants.AntColouringMaxIterations) && (robustness > AntColouringConstants.AntColouringMinRobustness)) {
-        while(i < AntColouringConstants.AntColouringMaxIterations) {
+        while(i < AntColouringConstants.AntColouringMaxIterations){
+            if(robustness < AntColouringConstants.AntColouringMinRobustness) {
+                break;
+            }
             for(int k=0; k < this.ants.size(); k++) {
                 //random assign of ant to node
                 AntAgent ant = ants.get(k);
@@ -72,6 +76,9 @@ public class AntColouringHeuristic {
             this.localSearchProcedure(this.graph);
             i++;
             System.out.println(i);
+            if(i % AntColouringConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
+                calculateRobustness();
+            }
         }
         calculateRobustness();
         System.out.println("Robustness: " + robustness);
@@ -254,7 +261,12 @@ public class AntColouringHeuristic {
             //randomly select colour
             Random random = new Random();
             Integer randomColour = -1;
-            randomColour = random.nextInt(coloursMap.size() - 1) + 1;
+            randomColour = coloursMap
+                    .keySet()
+                    .stream()
+                    .skip(random.nextInt(coloursMap.size() - 1) + 1)
+                    .findFirst()
+                    .orElse(null);
             Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList = customWeightedGraphHelper.
                     getNeighbourhoodListOfVertex(this.graph, randomVertex);
             boolean isRandomColourValid = true;
@@ -269,10 +281,11 @@ public class AntColouringHeuristic {
                 Integer oldColour = verticesColourMap.get(randomVertex);
                 Integer oldColouredVerticesNumber = coloursMap.get(oldColour);
                 verticesColourMap.replace(randomVertex, randomColour);
+                coloursMap.replace(randomColour, coloursMap.get(randomColour) + 1);
                 if (oldColouredVerticesNumber > 1) {
                     coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
                 } else {
-                    //coloursMap.remove(oldColour); //TODO: line 136 nullptr exception?
+                    coloursMap.remove(oldColour);
                 }
                 this.updatePheromoneTrail();
             }
