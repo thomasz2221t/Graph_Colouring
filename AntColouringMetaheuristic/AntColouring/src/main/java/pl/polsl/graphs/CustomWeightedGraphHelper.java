@@ -15,6 +15,7 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.nio.dimacs.DIMACSImporter;
 import org.jgrapht.util.SupplierUtil;
+import pl.polsl.exceptions.ProportionOutOfRange;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -23,10 +24,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NotDirectoryException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class CustomWeightedGraph {
+public class CustomWeightedGraphHelper {
     public static class CustomWeightedEdge extends DefaultWeightedEdge {
         @Override
         public String toString() {
@@ -35,7 +37,7 @@ public class CustomWeightedGraph {
     }
 
     public void testGraph() {
-        DefaultUndirectedWeightedGraph<String, CustomWeightedGraph.CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(CustomWeightedGraph.CustomWeightedEdge.class);
+        DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(CustomWeightedGraphHelper.CustomWeightedEdge.class);
 
         String x1 = "v1";
         String x2 = "v2";
@@ -45,11 +47,11 @@ public class CustomWeightedGraph {
         graph.addVertex(x2);
         graph.addVertex(x3);
 
-        CustomWeightedGraph.CustomWeightedEdge e1 = graph.addEdge(x1, x2);
+        CustomWeightedGraphHelper.CustomWeightedEdge e1 = graph.addEdge(x1, x2);
         graph.setEdgeWeight(e1, 2.0);
-        CustomWeightedGraph.CustomWeightedEdge e2 = graph.addEdge(x2, x3);
+        CustomWeightedGraphHelper.CustomWeightedEdge e2 = graph.addEdge(x2, x3);
         graph.setEdgeWeight(e2, 3.0);
-        CustomWeightedGraph.CustomWeightedEdge e3 = graph.addEdge(x3, x1);
+        CustomWeightedGraphHelper.CustomWeightedEdge e3 = graph.addEdge(x3, x1);
         graph.setEdgeWeight(e3, 0.19);
 
         System.out.println(graph);
@@ -65,7 +67,7 @@ public class CustomWeightedGraph {
             if(dimacsFolder.isDirectory()) {
                 for(final File dimacsFile : dimacsFolder.listFiles()) {
                     if(!dimacsFile.isDirectory()) {
-                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
+                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
                         try {
                             dimacsImporter.importGraph(graph, dimacsFile);
                             dimacsDataset.add(graph);
@@ -86,7 +88,7 @@ public class CustomWeightedGraph {
     }
 
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> importGraphInDIMACSFormat(String filePath) {
-        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
+        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
         DIMACSImporter<String, CustomWeightedEdge> dimacsImporter = new DIMACSImporter<>();
 
         try{
@@ -117,7 +119,7 @@ public class CustomWeightedGraph {
                     if (!dimacsFile.isDirectory()) {
                         DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graphWeighted = new DefaultUndirectedWeightedGraph<>(
                                 SupplierUtil.createStringSupplier(),
-                                SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
+                                SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
                         DefaultUndirectedGraph<String, DefaultEdge> graphUnweighted = new DefaultUndirectedGraph<>(
                                 SupplierUtil.createStringSupplier(),
                                 SupplierUtil.createDefaultEdgeSupplier(),
@@ -144,7 +146,7 @@ public class CustomWeightedGraph {
         DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> weightedGraph = new DefaultUndirectedWeightedGraph<>(
                 SupplierUtil.createStringSupplier(),
                 SupplierUtil.createSupplier(
-                        CustomWeightedGraph.CustomWeightedEdge.class
+                        CustomWeightedGraphHelper.CustomWeightedEdge.class
                 ));
         DIMACSImporter<String, DefaultEdge> dimacsImporter = new DIMACSImporter<>();
 
@@ -171,6 +173,56 @@ public class CustomWeightedGraph {
         return weightedGraph;
     }
 
+    public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> imposeUncertaintyToGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, float proportionOfEdgesToFuzz, float lowerBoundaryOfUncertainty){
+        List<CustomWeightedEdge> edgeList = graph.edgeSet().stream().toList();
+        int numberOfEdgesToFuzz = 0;
+        try {
+            if (proportionOfEdgesToFuzz >= 0 && proportionOfEdgesToFuzz <= 1) {
+                numberOfEdgesToFuzz = Math.round(edgeList.size() * proportionOfEdgesToFuzz);
+            } else {
+                throw new ProportionOutOfRange("Edge fuzz proportion out of range");
+            }
+
+            Set<Integer> randomValues = new Random()
+                    .ints(0, edgeList.size())
+                    .limit(numberOfEdgesToFuzz)
+                    .boxed()
+                    .collect(Collectors.toSet());
+            for (Integer edgeIndex: randomValues) {
+                Random uncertaintyGenerator = new Random();
+                double uncertaintyValue = uncertaintyGenerator.nextDouble(
+                        1 - lowerBoundaryOfUncertainty) + lowerBoundaryOfUncertainty;
+                graph.setEdgeWeight(edgeList.get(edgeIndex), uncertaintyValue);
+            }
+        } catch(ProportionOutOfRange e) {
+            System.err.println(e.getMessage());
+        }
+        return graph;
+    }
+
+    public String getRandomVertexFromGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
+        List<String> vertexList = graph.vertexSet().stream().toList();
+        Random random = new Random();
+        return vertexList.get(random.nextInt(vertexList.size()));
+    }
+
+    public Map<String, CustomWeightedEdge> getNeighbourhoodListOfVertex(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String vertexName) {
+        List<CustomWeightedEdge> vertexEdges = graph.edgesOf(vertexName).stream().toList();
+        Map<String, CustomWeightedEdge> vertexNeighbourhoodList = new HashMap<>();
+        for(CustomWeightedEdge edge : vertexEdges) {
+            String edgeSource = graph.getEdgeSource(edge);
+            String edgeTarget = graph.getEdgeTarget(edge);
+            if(edgeSource != vertexName) {
+                vertexNeighbourhoodList.put(edgeSource, edge);
+            } else if(edgeTarget != vertexName) {
+                vertexNeighbourhoodList.put(edgeTarget, edge);
+            } else {
+                System.err.println("Exception: Getting vertex neighbourhood list method found vertex with self referencing edge");
+            }
+        }
+        return vertexNeighbourhoodList;
+    }
+
     public void savingGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String path) {
         JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
 
@@ -192,7 +244,7 @@ public class CustomWeightedGraph {
     }
 
     private static <V, Vv, E> DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> convert(Graph<V, E> source) {
-        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> result = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraph.CustomWeightedEdge.class));
+        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> result = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
         //source.vertexSet().forEach(v -> result.addVertex(vertexMapper.apply(v)));
         source.edgeSet()
                 .forEach(
