@@ -9,9 +9,9 @@ import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
 import java.util.*;
 
-public class AntColouringHeuristic {
+public class AntColouringHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
-    private Map<String, Integer> verticesColourMap = new HashMap<>();
+    public Map<String, Integer> verticesColourMap = new HashMap<>();
     private Map<Integer, Integer> coloursMap = new HashMap<>();
     private Map<String, Double> pheromoneMap = new HashMap<>();
     private List<AntAgent> ants = new ArrayList<>();
@@ -31,7 +31,7 @@ public class AntColouringHeuristic {
         long i = 0;
         //pętla while
         //while((i < AntColouringConstants.AntColouringMaxIterations) && (robustness > AntColouringConstants.AntColouringMinRobustness)) {
-        while(i < AntColouringConstants.AntColouringMaxIterations){
+        while(i < AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS){
 //            if(robustness < AntColouringConstants.AntColouringMinRobustness) {
 //                break;
 //            }
@@ -48,15 +48,15 @@ public class AntColouringHeuristic {
             i++;
             System.out.println(i);
             if(i % AntColouringConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
-                calculateRobustness();
+                calculateRobustness(this.graph, this.verticesColourMap);
             }
         }
-        calculateRobustness();
+        calculateRobustness(this.graph, this.verticesColourMap);
         System.out.println("Robustness: " + robustness);
         System.out.println("Is colouring valid among solid edges: " + checkGraphValidityAmongSolidEdges());
 
         System.out.println("Koniec");
-        return verticesColourMap;
+        return this.verticesColourMap;
     }
 
     private void antOptimization(int k) {
@@ -166,7 +166,7 @@ public class AntColouringHeuristic {
     }
 
     private void assignColourToVertex(AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList) {
-        Integer oldColourIndex = verticesColourMap.get(ant.currentVertex);
+        Integer oldColourIndex = verticesColourMap.get(ant.getCurrentVertex());
         Integer newColourIndex = -1;
         for (Integer colourIndex : this.coloursMap.keySet()) {
             if(colourIndex == 0)
@@ -188,7 +188,7 @@ public class AntColouringHeuristic {
                 newColourIndex = chooseMinimalColourFromNeighbourhood(vertexNeighbourhoodList);
             }
         }
-        this.verticesColourMap.replace(ant.currentVertex, newColourIndex);
+        this.verticesColourMap.replace(ant.getCurrentVertex(), newColourIndex);
         this.coloursMap.replace(oldColourIndex, this.coloursMap.get(oldColourIndex) - 1);
         this.coloursMap.replace(newColourIndex, this.coloursMap.get(newColourIndex) + 1);
     }
@@ -196,9 +196,9 @@ public class AntColouringHeuristic {
     private double calculateUnvisitedNeighboursPheromoneAndHeuristicInformation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList, double heuristicInformationWeight, double pheromoneWeight, List<String> antMemory, Map<String, Double> pheromone, Map<String, Double> passingProbabilities, double unvisitedNeighboursPheromoneAndProbabilitySum) {
         for (String vertex: vertexNeighbourhoodList.keySet()) {
             //find edge
-            CustomWeightedEdge edge = graph.getEdge(ant.currentVertex, vertex) != null
-                    ? graph.getEdge(ant.currentVertex, vertex)
-                    : graph.getEdge(vertex, ant.currentVertex);
+            CustomWeightedEdge edge = graph.getEdge(ant.getCurrentVertex(), vertex) != null
+                    ? graph.getEdge(ant.getCurrentVertex(), vertex)
+                    : graph.getEdge(vertex, ant.getCurrentVertex());
             //obliczenie informacji heurystycznej
             //1/ilosc_wierzcholkow + solidnosc
             double robustness = graph.getEdgeWeight(edge);
@@ -320,18 +320,6 @@ public class AntColouringHeuristic {
                 imposeColouringAndUpdatePheromone(randomVertex, randomColour);
             }
         }
-    }
-
-    private void calculateRobustness() {
-        double graphPenaltiesSum = 0.0;
-        for(CustomWeightedEdge edge : this.graph.edgeSet()) {
-            Integer sourceVertexColour = this.verticesColourMap.get(this.graph.getEdgeSource(edge));
-            Integer targetVertexColour = this.verticesColourMap.get(this.graph.getEdgeTarget(edge));
-            if((this.graph.getEdgeWeight(edge) < 1.0) && (Objects.equals(sourceVertexColour, targetVertexColour))) {
-                graphPenaltiesSum += this.graph.getEdgeWeight(edge);
-            }
-        }
-        this.robustness = graphPenaltiesSum;
     }
 
     private boolean checkGraphValidityAmongSolidEdges() {

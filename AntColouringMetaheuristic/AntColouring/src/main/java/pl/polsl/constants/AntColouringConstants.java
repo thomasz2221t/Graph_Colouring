@@ -4,8 +4,8 @@ public final class AntColouringConstants {
 
     private AntColouringConstants() {}
     public static final int NUMBER_OF_AGENTS = 3;
-    public static final long AntColouringMaxIterations = 10000;
-    public static final double AntColouringMinRobustness = 0.9;
+    public static final long ANT_COLOURING_MAX_ITERATIONS = 10000;
+    public static final double ANT_COLOURING_MINIMAL_ROBUSTNESS = 0.9;
     public static final int MINIMAL_ROBUST_COLOUR_NUMBER = 1;
     public static final double PASSING_PROBABILITY_HEURISTIC_WEIGHT = 0.35;
     public static final double PASSING_PROBABILITY_PHEROMONE_WEIGHT = 1.0;
