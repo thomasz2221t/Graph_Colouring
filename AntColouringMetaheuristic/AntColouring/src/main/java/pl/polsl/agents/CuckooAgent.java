@@ -8,5 +8,5 @@ import java.util.Map;
 @Getter
 @Setter
 public class CuckooAgent {
-    private Map<String, Integer> currentVertex;
+    private Map<String, Integer> cuckooGeneticSolution;
 }
