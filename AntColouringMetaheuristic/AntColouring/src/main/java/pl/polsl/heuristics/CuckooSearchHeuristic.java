@@ -1,6 +1,9 @@
 package pl.polsl.heuristics;
 
+import org.apache.commons.math3.distribution.LevyDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import org.jgrapht.util.MathUtil;
 import pl.polsl.agents.CuckooAgent;
 import pl.polsl.constants.CuckooSearchConstants;
 import pl.polsl.constants.GraphConstants;
@@ -31,7 +34,11 @@ public class CuckooSearchHeuristic extends ColouringHeuristic {
 
         long i = 0;
         while(i < CuckooSearchConstants.CUCKOO_SEARCH_MAX_ITERATIONS) {
-
+            for(int k=0; k < CuckooSearchConstants.NUMBER_OF_AGENTS; k++) {
+                //wybranie M używając rozkładu Discrete Levi
+                int M = choosingVerticesToModifyUsingDiscreteLevyDist(CuckooSearchConstants.ALFA_SCALE_FACTOR, CuckooSearchConstants.BETA_INDEX_FACTOR);
+                vertexGeneticMutation(this.verticesColourMap, M);
+            }
             i++;
         }
         return this.verticesColourMap;
@@ -60,7 +67,7 @@ public class CuckooSearchHeuristic extends ColouringHeuristic {
                 .limit(verticesList.size())
                 .boxed()
                 .collect(Collectors.toList());
-        //laczenie listy wierzcholkow grafu oraz listy wylosowanych wartosci w mape
+        //łaczenie listy wierzcholkow grafu oraz listy wylosowanych wartosci w mape
         Map<String, Integer> randomSolution = IntStream
                 .range(0, verticesList.size())
                 .boxed()
@@ -71,11 +78,46 @@ public class CuckooSearchHeuristic extends ColouringHeuristic {
     private List<CuckooAgent> initCuckoos(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<CuckooAgent> cuckoos, int numberOfAgents) {
         for(int i = 0; i < numberOfAgents; i++) {
             CuckooAgent cuckoo = new CuckooAgent();
+            //wygenerowanie randomowego rozwiązania
             cuckoo.setCuckooGeneticSolution(this.generateRandomSolution(graph));
+            //przydzielenie mrówce
             cuckoos.add(cuckoo);
         }
         return cuckoos;
     }
+
+    private int choosingVerticesToModifyUsingDiscreteLevyDist(double alfa_ScaleFactor, double beta_IndexFactor) {
+        double standardDeviationP = MathUtil.factorial((int) beta_IndexFactor) * Math.sin((Math.PI * beta_IndexFactor) / 2)
+                / (MathUtil.factorial((int) (beta_IndexFactor / 2)) * beta_IndexFactor * Math.pow(2, (beta_IndexFactor - 1) / 2));
+        NormalDistribution normalDistributionP = new NormalDistribution(0, standardDeviationP);
+        NormalDistribution normalDistributionQ = new NormalDistribution(0, 1);
+        double randomNormalVariableP = normalDistributionP.sample();
+        double randomNormalVariableQ = normalDistributionQ.sample();
+        double levyRandomFlight_by_beta = randomNormalVariableP / Math.pow(Math.abs(randomNormalVariableQ), 1 / beta_IndexFactor);
+        double M = (alfa_ScaleFactor * levyRandomFlight_by_beta) + 1;
+        System.out.println("Discrete Levy Flight calculated by hand: " + M);
+        //using library
+        Random random = new Random();
+        LevyDistribution levyDistribution = new LevyDistribution(beta_IndexFactor, alfa_ScaleFactor); //mu - location parameter, c - scale parameter
+        double MTest = levyDistribution.cumulativeProbability(random.nextInt(2)) + 1;
+        System.out.println("Discrete Levy Flight calculated by library: " + MTest);
+        return (int) Math.floor(M);
+    }
+
+    private void vertexGeneticMutation(Map<String, Integer> verticesColourMap, int mutatingVerticesNumber) {
+        //generacja losowych indeksów wierzchołków o liczbie M
+        List<Integer> randomVerticesIndexes = new Random()
+                .ints(1, mutatingVerticesNumber)
+                .limit(mutatingVerticesNumber)
+                .boxed()
+                .collect(Collectors.toList());
+        Random random = new Random();
+        for (vertex : randomVerticesIndexes) {
+
+            verticesColourMap.put(vertex, )
+        }
+    }
+
 
     public CuckooSearchHeuristic(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
         this.graph = graph;
