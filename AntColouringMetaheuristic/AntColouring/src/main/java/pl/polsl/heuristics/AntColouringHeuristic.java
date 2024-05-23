@@ -86,7 +86,7 @@ public class AntColouringHeuristic extends ColouringHeuristic {
         //Przygotowanie mapy koloru Map<V,Integer> (Interface VertexColoringAlgorithm.Coloring<V>)
         this.initVerticesColourMap(this.graph, this.verticesColourMap);
         //Przygotowanie listy colorow c
-        this.initColourList(this.graph.vertexSet().size());
+        this.initColourList(this.coloursMap, this.graph.vertexSet().size(), AntColouringConstants.MINIMAL_ROBUST_COLOUR_NUMBER);
         //Przygotowanie mapy feromonu
         this.initPheromoneMap(this.graph, this.pheromoneMap);
         //spawn mrówek
@@ -111,10 +111,12 @@ public class AntColouringHeuristic extends ColouringHeuristic {
         return ants;
     }
 
-    private void initColourList(int numberOfGraphVertices) {
-        this.coloursMap.put(0, numberOfGraphVertices);
-        for(int i = 1; i <= AntColouringConstants.MINIMAL_ROBUST_COLOUR_NUMBER; i++)
-            this.coloursMap.put(i, 0);
+    private Map<Integer, Integer> initColourList(Map<Integer, Integer> coloursMap, int numberOfGraphVertices, int beginningNumberOfColours) {
+        coloursMap.put(0, numberOfGraphVertices);
+        for(int i = 1; i <= beginningNumberOfColours; i++) {
+            coloursMap.put(i, 0);
+        }
+        return coloursMap;
     }
 
     private boolean checkIfAllVerticesAreSolid(Map<String, CustomWeightedEdge> vertexNeighbourhoodList) {
@@ -198,7 +200,7 @@ public class AntColouringHeuristic extends ColouringHeuristic {
         return unvisitedNeighboursPheromoneAndProbabilitySum;
     }
 
-    private static void divideProbabilityByPassingProbabilityOfUnvisitedNodes(List<String> antMemory, Map<String, Double> passingProbabilities, double unvisitedNeighboursPheromoneAndProbabilitySum) {
+    private void divideProbabilityByPassingProbabilityOfUnvisitedNodes(List<String> antMemory, Map<String, Double> passingProbabilities, double unvisitedNeighboursPheromoneAndProbabilitySum) {
         for(String vertex : passingProbabilities.keySet()) {
             double unvisitedSumTemp = unvisitedNeighboursPheromoneAndProbabilitySum;
             double probabilityContentsValue = passingProbabilities.get(vertex);
@@ -267,7 +269,7 @@ public class AntColouringHeuristic extends ColouringHeuristic {
     private Integer randomlySelectColour() {
         Random random = new Random();
         Integer randomColour = -1;
-        randomColour = coloursMap
+        randomColour = this.coloursMap
                 .keySet()
                 .stream()
                 .skip(random.nextInt(coloursMap.size() - 1) + 1)
@@ -277,26 +279,26 @@ public class AntColouringHeuristic extends ColouringHeuristic {
     }
 
     private void imposeColouringAndUpdatePheromone(String randomVertex, Integer randomColour) {
-        Integer oldColour = verticesColourMap.get(randomVertex);
-        verticesColourMap.replace(randomVertex, randomColour);
-        coloursMap.replace(randomColour, coloursMap.get(randomColour) + 1);
-        if (coloursMap.get(oldColour) > 1) {
-            coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
+        Integer oldColour = this.verticesColourMap.get(randomVertex);
+        this.verticesColourMap.replace(randomVertex, randomColour);
+        this.coloursMap.replace(randomColour, this.coloursMap.get(randomColour) + 1);
+        if (this.coloursMap.get(oldColour) > 1) {
+            this.coloursMap.replace(oldColour, this.coloursMap.get(oldColour) - 1);
         } else {
-            coloursMap.remove(oldColour);
+            this.coloursMap.remove(oldColour);
         }
         this.updatePheromoneTrail();
     }
 
     private void localSearchProcedure(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
         //protecting against empty colouring
-        if (coloursMap.size() > 1) {
+        if (this.coloursMap.size() > 1) {
             String randomVertex = this.customWeightedGraphHelper.getRandomVertexFromGraph(graph);//get random vertex from graph
             //randomly select colour
             Integer randomColour = this.randomlySelectColour();
             Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList = customWeightedGraphHelper.
                     getNeighbourhoodListOfVertex(this.graph, randomVertex);
-            boolean isRandomColourValid = checkIfColourIsValid(randomVertexNeighbourhoodList, verticesColourMap, randomColour);
+            boolean isRandomColourValid = checkIfColourIsValid(randomVertexNeighbourhoodList,this.verticesColourMap, randomColour);
             //check if colouring is valid, if so approve changes and update pheromone
             if (isRandomColourValid) {
                 this.imposeColouringAndUpdatePheromone(randomVertex, randomColour);
