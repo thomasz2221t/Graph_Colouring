@@ -9,5 +9,4 @@ import java.util.Map;
 @Setter
 public class CuckooAgent {
     private Map<String, Integer> cuckooGeneticSolution;
-    private double solutionFitting = 0.0;
 }

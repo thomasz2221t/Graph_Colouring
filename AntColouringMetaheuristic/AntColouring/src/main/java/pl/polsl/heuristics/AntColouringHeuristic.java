@@ -9,7 +9,7 @@ import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
 import java.util.*;
 
-public class AntColouringHeuristic extends ColouringHeuristic {
+public class AntColouringHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
     public Map<String, Integer> verticesColourMap = new HashMap<>();
     private Map<Integer, Integer> coloursMap = new HashMap<>();

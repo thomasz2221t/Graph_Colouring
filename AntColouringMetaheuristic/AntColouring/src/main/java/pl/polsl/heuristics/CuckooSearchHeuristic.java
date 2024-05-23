@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class CuckooSearchHeuristic extends ColouringHeuristic {
+public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
     public Map<String, Integer> verticesColourMap = new HashMap<>();
     private int maxNumberOfColours = CuckooSearchConstants.MAXIMAL_ROBUST_COLOUR_NUMBER;

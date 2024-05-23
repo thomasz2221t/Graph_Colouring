@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class ColouringHeuristic {
+public abstract class AbstractColouringHeuristic {
 
     protected Map<String, Integer> initVerticesColourMap(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {
         List<String> vertexList = graph.vertexSet().stream().toList();
