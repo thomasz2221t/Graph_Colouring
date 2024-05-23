@@ -37,7 +37,9 @@ public class CuckooSearchHeuristic extends ColouringHeuristic {
             for(int k=0; k < CuckooSearchConstants.NUMBER_OF_AGENTS; k++) {
                 //wybranie M używając rozkładu Discrete Levi
                 int M = choosingVerticesToModifyUsingDiscreteLevyDist(CuckooSearchConstants.ALFA_SCALE_FACTOR, CuckooSearchConstants.BETA_INDEX_FACTOR);
-                vertexGeneticMutation(this.verticesColourMap, M);
+                //modyfikacja M wierzchołków
+                vertexGeneticMutation(this.graph, this.verticesColourMap, M);
+                //obliczenie funkcji fitnessu obu rozwiązań
             }
             i++;
         }
@@ -66,7 +68,7 @@ public class CuckooSearchHeuristic extends ColouringHeuristic {
                 .ints(1, maxNumberOfAttachedEdges)
                 .limit(verticesList.size())
                 .boxed()
-                .collect(Collectors.toList());
+                .toList();
         //łaczenie listy wierzcholkow grafu oraz listy wylosowanych wartosci w mape
         Map<String, Integer> randomSolution = IntStream
                 .range(0, verticesList.size())
@@ -104,18 +106,21 @@ public class CuckooSearchHeuristic extends ColouringHeuristic {
         return (int) Math.floor(M);
     }
 
-    private void vertexGeneticMutation(Map<String, Integer> verticesColourMap, int mutatingVerticesNumber) {
+    private Map<String, Integer> vertexGeneticMutation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph,
+                                       Map<String, Integer> verticesColourMap, int mutatingVerticesNumber) {
+        List<String> vertexList = graph.vertexSet().stream().toList();
         //generacja losowych indeksów wierzchołków o liczbie M
         List<Integer> randomVerticesIndexes = new Random()
                 .ints(1, mutatingVerticesNumber)
                 .limit(mutatingVerticesNumber)
                 .boxed()
-                .collect(Collectors.toList());
+                .toList();
         Random random = new Random();
-        for (vertex : randomVerticesIndexes) {
-
-            verticesColourMap.put(vertex, )
+        for (Integer vertexIndex : randomVerticesIndexes) {
+            String vertex = vertexList.get(vertexIndex);
+            verticesColourMap.put(vertex, random.nextInt());
         }
+        return verticesColourMap;
     }
 
 
