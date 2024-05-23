@@ -180,7 +180,7 @@ public class CustomWeightedGraphHelper {
             if (proportionOfEdgesToFuzz >= 0 && proportionOfEdgesToFuzz <= 1) {
                 numberOfEdgesToFuzz = Math.round(edgeList.size() * proportionOfEdgesToFuzz);
             } else {
-                throw new ProportionOutOfRange("Edge fuzz proportion out of range");
+                throw new ProportionOutOfRange("Edge certainity proportion out of range");
             }
 
             Set<Integer> randomValues = new Random()

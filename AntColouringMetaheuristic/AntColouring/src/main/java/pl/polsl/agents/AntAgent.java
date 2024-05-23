@@ -9,9 +9,9 @@ import java.util.List;
 @Getter
 @Setter
 public class AntAgent {
-    public String currentVertex;
+    private String currentVertex;
 
-    public List<String> visitedVertexMemory = new ArrayList<>();
+    private List<String> visitedVertexMemory = new ArrayList<>();
 
     public void memorizeNewVisitedVertex(String vertex) {
         this.visitedVertexMemory.add(vertex);
