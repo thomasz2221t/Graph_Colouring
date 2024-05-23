@@ -27,7 +27,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
                 GraphConstants.PROPORTION_EDGES_TO_FUZZ,
                 GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
         //only for testing
-        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"uncertainty.png");
+        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY + "uncertainty.png");
         this.init();
 
         long i = 0;

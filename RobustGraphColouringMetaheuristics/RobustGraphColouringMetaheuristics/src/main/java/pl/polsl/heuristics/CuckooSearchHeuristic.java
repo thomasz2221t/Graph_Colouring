@@ -29,7 +29,7 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
                 GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
         //only for testing
         customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
-                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY + "cuckoo.png");
+                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"cuckoo.png");
 
         this.init();
 
@@ -203,12 +203,12 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
     }
 
     private Map<String, Integer> evaluateBestCuckooSolution(List<CuckooAgent> cuckoos) {
-        double bestFitnessValue = cuckoos.get(0).getSolutionFitting();
+        double bestFitnessValue = 0;//cuckoos.get(0).getSolutionFitting();
         int bestSolutionIndex = 0;
         for(int k=1; k < cuckoos.size(); k++) {
-            if(cuckoos.get(k).getSolutionFitting() < bestFitnessValue) {
+            //if(cuckoos.get(k).getSolutionFitting() < bestFitnessValue) {
                 bestSolutionIndex = k;
-            }
+            //}
         }
         return cuckoos.get(bestSolutionIndex).getCuckooGeneticSolution();
     }
