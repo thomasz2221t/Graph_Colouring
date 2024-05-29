@@ -38,7 +38,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
 //                break;
 //            }
             //====
-            for(int k=0; k < this.ants.size(); k++) {
+            for(int k = 0; k < this.ants.size(); k++) {
                 this.antOptimization(k);
                 //======
             }
@@ -73,9 +73,8 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         //obliczenie wag przejscia
         Map<String, Double> passingProbabilityMap = this.calculateAntPassingProbabilities(graph,
                 ant,
-                vertexNeighbourhoodList,
-                AntColouringConstants.PASSING_PROBABILITY_HEURISTIC_WEIGHT,
-                AntColouringConstants.PASSING_PROBABILITY_PHEROMONE_WEIGHT);
+                vertexNeighbourhoodList
+        );
         //====
         //while coloring isn't valid select higher probability node
         //przenies mrowke
@@ -110,15 +109,6 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         }
         return ants;
     }
-
-    private Map<Integer, Integer> initColourList(Map<Integer, Integer> coloursMap, int numberOfGraphVertices, int beginningNumberOfColours) {
-        coloursMap.put(0, numberOfGraphVertices);
-        for(int i = 1; i <= beginningNumberOfColours; i++) {
-            coloursMap.put(i, 0);
-        }
-        return coloursMap;
-    }
-
     private boolean checkIfAllVerticesAreSolid(Map<String, CustomWeightedEdge> vertexNeighbourhoodList) {
         for(String neighbourVertex : vertexNeighbourhoodList.keySet()) {
             if(graph.getEdgeWeight(vertexNeighbourhoodList.get(neighbourVertex)) < AntColouringConstants.ROBUSTNESS_PENALTY_COLOURING_INVALID_ACCEPTABLE) {
@@ -177,7 +167,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         this.coloursMap.replace(newColourIndex, this.coloursMap.get(newColourIndex) + 1);
     }
 
-    private double calculateUnvisitedNeighboursPheromoneAndHeuristicInformation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList, double heuristicInformationWeight, double pheromoneWeight, List<String> antMemory, Map<String, Double> pheromone, Map<String, Double> passingProbabilities, double unvisitedNeighboursPheromoneAndProbabilitySum) {
+    private double calculateUnvisitedNeighboursPheromoneAndHeuristicInformation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList, List<String> antMemory, Map<String, Double> pheromone, Map<String, Double> passingProbabilities, double unvisitedNeighboursPheromoneAndProbabilitySum) {
         for (String vertex: vertexNeighbourhoodList.keySet()) {
             //find edge
             CustomWeightedEdge edge = graph.getEdge(ant.getCurrentVertex(), vertex) != null
@@ -191,7 +181,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
             //obliczenie feromonu
             double pheromoneValue = pheromone.get(vertex);
             //obliczenie feromonu i informacji heurystycznej
-            double probabilityContentsMultiplication = (heuristicInformationWeight * heuristicInformation) * (pheromoneWeight * pheromoneValue);
+            double probabilityContentsMultiplication = (AntColouringConstants.PASSING_PROBABILITY_HEURISTIC_WEIGHT * heuristicInformation) * (AntColouringConstants.PASSING_PROBABILITY_PHEROMONE_WEIGHT * pheromoneValue);
             if(!antMemory.contains(vertex)){ //unvisited
                 unvisitedNeighboursPheromoneAndProbabilitySum += probabilityContentsMultiplication;
             }
@@ -215,13 +205,13 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         }
     }
 
-    private Map<String, Double> calculateAntPassingProbabilities(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, AntAgent ant,  Map<String, CustomWeightedEdge> vertexNeighbourhoodList, double heuristicInformationWeight, double pheromoneWeight) {
+    private Map<String, Double> calculateAntPassingProbabilities(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList) {
         List<String> antMemory = ant.getVisitedVertexMemory();
         final Map<String, Double> pheromone = this.pheromoneMap;
         Map<String, Double> passingProbabilities = new HashMap<>();
         double unvisitedNeighboursPheromoneAndProbabilitySum = 0.0;
         unvisitedNeighboursPheromoneAndProbabilitySum =
-                this.calculateUnvisitedNeighboursPheromoneAndHeuristicInformation(graph, ant, vertexNeighbourhoodList, heuristicInformationWeight, pheromoneWeight, antMemory, pheromone, passingProbabilities, unvisitedNeighboursPheromoneAndProbabilitySum);
+                this.calculateUnvisitedNeighboursPheromoneAndHeuristicInformation(graph, ant, vertexNeighbourhoodList, antMemory, pheromone, passingProbabilities, unvisitedNeighboursPheromoneAndProbabilitySum);
         //divide passing probability by unvisited nodes
         this.divideProbabilityByPassingProbabilityOfUnvisitedNodes(antMemory, passingProbabilities, unvisitedNeighboursPheromoneAndProbabilitySum);
         return passingProbabilities;

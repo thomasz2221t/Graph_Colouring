@@ -20,6 +20,15 @@ public abstract class AbstractColouringHeuristic {
         return verticesColourMap;
     }
 
+    protected Map<Integer, Integer> initColourList(Map<Integer, Integer> coloursMap, int numberOfGraphVertices, int beginningNumberOfColours) {
+        coloursMap.put(0, numberOfGraphVertices);
+        for(int i = 1; i <= beginningNumberOfColours; i++) {
+            coloursMap.put(i, 0);
+        }
+        return coloursMap;
+    }
+
+
     protected boolean checkIfColourIsValid(Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList, Map<String, Integer> verticesColourMap, Integer randomColour) {
         for (String vertex : randomVertexNeighbourhoodList.keySet()) {
             if (verticesColourMap.get(vertex) == randomColour) {

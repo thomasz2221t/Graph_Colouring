@@ -10,7 +10,6 @@ import java.util.List;
 @Setter
 public class AntAgent {
     private String currentVertex;
-
     private List<String> visitedVertexMemory = new ArrayList<>();
 
     public void memorizeNewVisitedVertex(String vertex) {
