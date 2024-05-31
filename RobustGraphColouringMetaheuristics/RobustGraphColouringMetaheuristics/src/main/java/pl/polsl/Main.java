@@ -38,8 +38,8 @@ public class Main {
         //============================================Pszczela heurysytka===============================================//
         BeeColouringHeuristic beeColouringHeuristic = new BeeColouringHeuristic(graph);
         var beesColouring = beeColouringHeuristic.colourTheGraph();
-        for(String vertex : cuckooColouring.keySet()) {
-            System.out.println(vertex + " kolor: " + cuckooColouring.get(vertex));
+        for(String vertex : beesColouring.keySet()) {
+            System.out.println(vertex + " kolor: " + beesColouring.get(vertex));
         }
     }
 }

@@ -4,6 +4,7 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.bees.BeeAgent;
 import pl.polsl.agents.bees.BeesHive;
 import pl.polsl.constants.BeeColouringConstants;
+import pl.polsl.constants.GraphConstants;
 import pl.polsl.enums.BeeAgentType;
 import pl.polsl.exceptions.BeesHiveNotFound;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
@@ -21,6 +22,13 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 
     public Map<String, Integer> colourTheGraph() {
+
+        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
+                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
+                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
+        //only for testing
+        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
+                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"bees.png");
 
         this.init();
         long i = 0;
