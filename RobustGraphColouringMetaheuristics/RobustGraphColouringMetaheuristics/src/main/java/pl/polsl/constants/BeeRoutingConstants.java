@@ -17,5 +17,7 @@ public final class BeeRoutingConstants {
     public static final double HEURISTIC_INFO_COLOURING_VALIDITY_FACTOR = 0.5;
     public static final double HEURISTIC_INFO_ROBUSTNESS_FACTOR = 0.2;
     public static final double HEURISTIC_INFO_VERTEX_VISITED_FACTOR = 0.2;
+    public static final int HIVES_SHUFFLE_ITERATION_PERIOD = 1000;
+    public static final double ROBUSTNESS_UPDATE_INTERVAL = 1000;
 }
 

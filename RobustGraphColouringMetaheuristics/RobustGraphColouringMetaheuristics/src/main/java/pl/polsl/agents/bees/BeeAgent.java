@@ -14,7 +14,6 @@ public class BeeAgent {
     private final BeeAgentType type;
     private String currentVertex;
     private String hiveVertex;
-    private Integer currentDistance = 0;
     private List<String> visitedVertexMemory = new ArrayList<>();
     private Map<String, Integer> feedingRegionInformation;
 
@@ -23,7 +22,7 @@ public class BeeAgent {
             this.visitedVertexMemory.add(vertex);
     }
 
-    public void updateNeighbourhoodInformation(String vertex, Integer colour) {
+    public void updateFeedingRegionInformation(String vertex, Integer colour) {
         if(this.feedingRegionInformation.containsKey(vertex)){
             this.feedingRegionInformation.replace(vertex, colour);
         } else {
