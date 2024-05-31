@@ -11,25 +11,31 @@ import java.util.Map;
 @Getter
 @Setter
 public class BeeAgent {
-    public final BeeAgentType type;
+    private final BeeAgentType type;
     private String currentVertex;
     private String hiveVertex;
-    private Integer currentDistance;
+    private Integer currentDistance = 0;
     private List<String> visitedVertexMemory = new ArrayList<>();
-    private Map<String, Integer> neighbourhoodInformation;
+    private Map<String, Integer> feedingRegionInformation;
 
     public void memorizeNewVisitedVertex(String vertex) {
-        this.visitedVertexMemory.add(vertex);
+        if(!visitedVertexMemory.contains(vertex))
+            this.visitedVertexMemory.add(vertex);
     }
 
-    public void addNeighbourhoodInformation(String vertex, Integer colour) {
-        if(this.neighbourhoodInformation.containsKey(vertex)){
-            this.neighbourhoodInformation.replace(vertex, colour);
+    public void updateNeighbourhoodInformation(String vertex, Integer colour) {
+        if(this.feedingRegionInformation.containsKey(vertex)){
+            this.feedingRegionInformation.replace(vertex, colour);
+        } else {
+            this.feedingRegionInformation.put(vertex, colour);
         }
     }
 
-    public BeeAgent(BeeAgentType type, Map<String, Integer> neighbourhoodInformation){
+    public BeeAgent(BeeAgentType type, BeesHive hive){
         this.type = type;
-        this.neighbourhoodInformation = neighbourhoodInformation;
+        this.feedingRegionInformation = hive.getFeedingRegionInformation();
+        this.hiveVertex = hive.getLocationVertex();
+        this.currentVertex = hive.getLocationVertex();
+        memorizeNewVisitedVertex(hive.getLocationVertex());
     }
 }

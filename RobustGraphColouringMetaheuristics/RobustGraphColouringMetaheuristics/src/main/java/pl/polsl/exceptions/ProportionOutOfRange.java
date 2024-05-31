@@ -1,6 +1,6 @@
 package pl.polsl.exceptions;
 
-public class ProportionOutOfRange extends Exception{
+public class ProportionOutOfRange extends Exception {
     public ProportionOutOfRange(String message) {
         super(message);
     }

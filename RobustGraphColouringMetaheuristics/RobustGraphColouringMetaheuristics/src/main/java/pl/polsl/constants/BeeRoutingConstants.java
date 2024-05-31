@@ -12,5 +12,10 @@ public final class BeeRoutingConstants {
     //public static final int MINIMAL_ROBUST_COLOUR_NUMBER = 3;
     public static final int MAXIMAL_ROBUST_COLOUR_NUMBER = 5;
     public static final int FEEDING_REGION_DEPTH = 3;
+    public static final int WORKER_OPERATIONAL_ITERATION_NUMBER = 3;
+    public static final int SCOUT_OPERATIONAL_ITERATION_NUMBER = 10;
+    public static final double HEURISTIC_INFO_COLOURING_VALIDITY_FACTOR = 0.5;
+    public static final double HEURISTIC_INFO_ROBUSTNESS_FACTOR = 0.2;
+    public static final double HEURISTIC_INFO_VERTEX_VISITED_FACTOR = 0.2;
 }
 

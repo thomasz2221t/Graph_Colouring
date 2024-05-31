@@ -12,7 +12,13 @@ public class BeesHive {
     private Map<String, Integer> feedingRegionInformation;
 
     public void updateFeedingRegionInformation(Map<String, Integer> feedingRegionInformation){
-
+        for (String vertex : feedingRegionInformation.keySet()) {
+            if(this.feedingRegionInformation.containsKey(vertex)){
+                this.feedingRegionInformation.replace(vertex, feedingRegionInformation.get(vertex));
+            } else {
+                this.feedingRegionInformation.put(vertex, feedingRegionInformation.get(vertex));
+            }
+        }
     }
 
     public BeesHive(String locationVertex, Map<String, Integer> foodRegionInformation){

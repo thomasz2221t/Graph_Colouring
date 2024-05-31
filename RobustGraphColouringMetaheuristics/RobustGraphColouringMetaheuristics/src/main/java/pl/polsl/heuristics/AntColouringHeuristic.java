@@ -174,7 +174,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
                     ? graph.getEdge(ant.getCurrentVertex(), vertex)
                     : graph.getEdge(vertex, ant.getCurrentVertex());
             //obliczenie informacji heurystycznej
-            //1/ilosc_wierzcholkow + solidnosc
+            //(1/ilosc_wierzcholkow) * solidnosc
             double robustness = graph.getEdgeWeight(edge);
             int numberOfPotentialRoutes = customWeightedGraphHelper.getNeighbourhoodListOfVertex(graph, vertex).size();
             double heuristicInformation = robustness/numberOfPotentialRoutes;
