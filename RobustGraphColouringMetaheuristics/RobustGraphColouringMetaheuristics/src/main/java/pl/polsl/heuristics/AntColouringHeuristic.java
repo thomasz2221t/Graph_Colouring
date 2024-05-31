@@ -15,7 +15,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
     private Map<Integer, Integer> coloursMap = new HashMap<>();
     private Map<String, Double> pheromoneMap = new HashMap<>();
     private List<AntAgent> ants = new ArrayList<>();
-    private Double robustness = Double.valueOf(100);
+    private Double robustness = 100.0;
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 
     public Map<String, Integer> colourTheGraph() {

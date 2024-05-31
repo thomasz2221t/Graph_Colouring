@@ -18,7 +18,7 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
     public Map<String, Integer> verticesColourMap = new HashMap<>();
     private int maxNumberOfColours = CuckooSearchConstants.MAXIMAL_ROBUST_COLOUR_NUMBER;
     private List<CuckooAgent> cuckoos = new ArrayList<>();
-    private Double robustness = Double.valueOf(100);
+    private Double robustness = 100.0;
     private int numberOfCorrectSolutions = 0;
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 

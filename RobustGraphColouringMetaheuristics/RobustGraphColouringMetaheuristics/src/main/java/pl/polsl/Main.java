@@ -3,7 +3,7 @@ package pl.polsl;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.heuristics.AntColouringHeuristic;
-import pl.polsl.heuristics.BeeRoutingHeuristic;
+import pl.polsl.heuristics.BeeColouringHeuristic;
 import pl.polsl.heuristics.CuckooSearchHeuristic;
 
 public class Main {
@@ -36,8 +36,8 @@ public class Main {
             System.out.println(vertex + " kolor: " + cuckooColouring.get(vertex));
         }
         //============================================Pszczela heurysytka===============================================//
-        BeeRoutingHeuristic beeRoutingHeuristic = new BeeRoutingHeuristic(graph);
-        var beesColouring = beeRoutingHeuristic.colourTheGraph();
+        BeeColouringHeuristic beeColouringHeuristic = new BeeColouringHeuristic(graph);
+        var beesColouring = beeColouringHeuristic.colourTheGraph();
         for(String vertex : cuckooColouring.keySet()) {
             System.out.println(vertex + " kolor: " + cuckooColouring.get(vertex));
         }

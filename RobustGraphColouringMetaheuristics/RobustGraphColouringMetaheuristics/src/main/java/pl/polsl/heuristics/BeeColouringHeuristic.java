@@ -3,8 +3,7 @@ package pl.polsl.heuristics;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.bees.BeeAgent;
 import pl.polsl.agents.bees.BeesHive;
-import pl.polsl.constants.AntColouringConstants;
-import pl.polsl.constants.BeeRoutingConstants;
+import pl.polsl.constants.BeeColouringConstants;
 import pl.polsl.enums.BeeAgentType;
 import pl.polsl.exceptions.BeesHiveNotFound;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
@@ -12,29 +11,29 @@ import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
 import java.util.*;
 
-public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
+public class BeeColouringHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
     public Map<String, Integer> verticesColourMap = new HashMap<>();//the observator
     private Map<Integer, Integer> coloursMap = new HashMap<>();
-    private List<BeesHive> beesHives;
-    private List<BeeAgent> bees;
-    private Double robustness = Double.valueOf(100);
+    private List<BeesHive> beesHives = new ArrayList<>();
+    private List<BeeAgent> bees = new ArrayList<>();
+    private Double robustness = 100.0;
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 
     public Map<String, Integer> colourTheGraph() {
 
         this.init();
         long i = 0;
-        while(i < BeeRoutingConstants.BEE_COLOURING_MAX_ITERATIONS) {
+        while(i < BeeColouringConstants.BEE_COLOURING_MAX_ITERATIONS) {
 
-            for(int k = 0; k < BeeRoutingConstants.NUMBER_OF_AGENTS; k++) {
+            for(int k = 0; k < BeeColouringConstants.NUMBER_OF_AGENTS; k++) {
                 BeeAgent bee = this.bees.get(k);
                 this.performBeeSearch(this.graph, this.verticesColourMap, this.coloursMap, this.beesHives, bee);
             }
-            if(i % BeeRoutingConstants.HIVES_SHUFFLE_ITERATION_PERIOD == 0) {
+            if(i % BeeColouringConstants.HIVES_SHUFFLE_ITERATION_PERIOD == 0) {
                 this.shuffleBeesAndHives(this.graph, this.bees, this.beesHives);
             }
-            if(i % BeeRoutingConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
+            if(i % BeeColouringConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
                 this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             }
             i++;
@@ -48,7 +47,7 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
 
     private void init() {
         this.initVerticesColourMap(this.graph, this.verticesColourMap);
-        this.initColourList(this.coloursMap, this.graph.vertexSet().size(), BeeRoutingConstants.MAXIMAL_ROBUST_COLOUR_NUMBER);
+        this.initColourList(this.coloursMap, this.graph.vertexSet().size(), BeeColouringConstants.MAXIMAL_ROBUST_COLOUR_NUMBER);
         //init Hives and Bees
         this.initHives(this.graph, this.beesHives);
         this.initBees(this.bees, this.beesHives);
@@ -59,9 +58,9 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
         List<String> verticesToVisit = new ArrayList<>();
         Map<String, Integer> feedingRegion = new HashMap<>();
         verticesToVisit.add(beginVertex);
-        for(int i = 0; i < BeeRoutingConstants.FEEDING_REGION_DEPTH; i++) {
+        for(int i = 0; i < BeeColouringConstants.FEEDING_REGION_DEPTH; i++) {
             int k = 0;
-            while(!verticesToVisit.isEmpty()) {
+            while(k < verticesToVisit.size()) {
                 Map<String, CustomWeightedEdge> neighbourhoodMap =
                         this.customWeightedGraphHelper.getNeighbourhoodListOfVertex(graph, verticesToVisit.get(k));
                 for(String vertex : neighbourhoodMap.keySet()) {
@@ -70,6 +69,7 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
                     feedingRegion.put(vertex, 0);
                     verticesToVisit.add(vertex);
                 }
+                verticesToVisit.remove(k);
                 k++;
             }
         }
@@ -77,7 +77,7 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
     }
 
     private List<BeesHive> initHives(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<BeesHive> hives) {
-        for(int i = 0; i < BeeRoutingConstants.NUMBER_OF_AGENTS; i++) {
+        for(int i = 0; i < BeeColouringConstants.NUMBER_OF_AGENTS; i++) {
             String randomVertex = this.customWeightedGraphHelper.getRandomVertexFromGraph(graph);
             Map<String, Integer> feedingRegion = this.determineFeedingRegionInformation(graph, randomVertex);
             BeesHive beesHive = new BeesHive(randomVertex, feedingRegion);
@@ -87,8 +87,8 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
     }
 
     private List<BeeAgent> initBees(List<BeeAgent> bees, List<BeesHive> hives) {
-        int scoutingVacancies = BeeRoutingConstants.NUMBER_OF_BEE_SCOUTS;
-        int workingVacancies = BeeRoutingConstants.NUMBER_OF_BEE_WORKERS;
+        int scoutingVacancies = BeeColouringConstants.NUMBER_OF_BEE_SCOUTS;
+        int workingVacancies = BeeColouringConstants.NUMBER_OF_BEE_WORKERS;
         int hiveIndex = 0;
         while(scoutingVacancies + workingVacancies > 0) {
             BeesHive hive = hives.get(hiveIndex);
@@ -150,9 +150,9 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
         double robustness = graph.getEdgeWeight(edge);
         double colouringValidity =  verticesColourMap.get(vertex) > 0 ? 1 : 0;
         double vertexVisited = bee.getVisitedVertexMemory().contains(vertex) ? 1 : 0;
-        double heuristicInformation = BeeRoutingConstants.HEURISTIC_INFO_ROBUSTNESS_FACTOR * robustness
-                + BeeRoutingConstants.HEURISTIC_INFO_COLOURING_VALIDITY_FACTOR * colouringValidity
-                / BeeRoutingConstants.HEURISTIC_INFO_VERTEX_VISITED_FACTOR * vertexVisited;
+        double heuristicInformation = BeeColouringConstants.HEURISTIC_INFO_ROBUSTNESS_FACTOR * robustness
+                + BeeColouringConstants.HEURISTIC_INFO_COLOURING_VALIDITY_FACTOR * colouringValidity
+                / BeeColouringConstants.HEURISTIC_INFO_VERTEX_VISITED_FACTOR * vertexVisited;
         probabilitesSum += heuristicInformation;
         passingProbabilites.put(vertex, heuristicInformation);
         return probabilitesSum;
@@ -186,12 +186,11 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
     }
 
     private BeesHive getHive(BeeAgent bee, List<BeesHive> hives) throws BeesHiveNotFound {
-        BeesHive hive = hives
+        return hives
                 .stream()
                 .filter((BeesHive beesHive) -> beesHive.getLocationVertex() == bee.getHiveVertex())
                 .findFirst()
                 .orElseThrow(() -> new BeesHiveNotFound("Couldn't find bee hive."));
-        return hive;
     }
 
     private void returnToHiveAndShareInfo(BeeAgent bee, BeesHive hive) {
@@ -204,10 +203,10 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
     private void performBeeSearch(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, List<BeesHive> hives, BeeAgent bee) {
         //dla kazdej mozliwosci ruchu
         int beeOperationalTime = bee.getType() == BeeAgentType.SCOUT
-                ? BeeRoutingConstants.SCOUT_OPERATIONAL_ITERATION_NUMBER
-                : BeeRoutingConstants.WORKER_OPERATIONAL_ITERATION_NUMBER;
+                ? BeeColouringConstants.SCOUT_OPERATIONAL_ITERATION_NUMBER
+                : BeeColouringConstants.WORKER_OPERATIONAL_ITERATION_NUMBER;
         try {
-            BeesHive hive = getHive(bee, hives);
+            BeesHive hive = this.getHive(bee, hives);
             for(int i = 0; i < beeOperationalTime; i++) {
                 //colour vertex and synchronise information about each neighbour vertex
                 Map<String, CustomWeightedEdge> neighbourhood = this.colourVertexWithDSaturAndReturnNeighbourhood(graph, verticesColourMap, coloursMap, bee);
@@ -223,41 +222,49 @@ public class BeeRoutingHeuristic extends AbstractColouringHeuristic {
         }
     }
 
-    private void shuffleBeesAndHives(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<BeeAgent> bees, List<BeesHive> hives) {
-        for (BeeAgent bee : bees) {
-            Map<String, Integer> feedingRegionInformation = bee.getFeedingRegionInformation();
-            //get uncoloured vertex from neighbourhood or get random vertex
-            String hiveRelocationVertex = "";
-            hiveRelocationVertex = feedingRegionInformation
-                    .entrySet()
-                    .stream()
-                    .filter(vertex -> vertex.getValue() == 0)
-                    .findFirst()
-                    .map(Map.Entry::getKey)
-                    .orElse(
-                            this.customWeightedGraphHelper.getRandomVertexFromGraph(graph));
-            //get new feeding region without colouring on vertex
-            Map<String, Integer> feedingRegion = this.determineFeedingRegionInformation(graph, hiveRelocationVertex);
+    private String getHiveRelocationVertex(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> feedingRegionInformation) {
+        String hiveRelocationVertex;
+        hiveRelocationVertex = feedingRegionInformation
+                .entrySet()
+                .stream()
+                .filter(vertex -> vertex.getValue() == 0)
+                .findFirst()
+                .map(Map.Entry::getKey)
+                .orElse(
+                        this.customWeightedGraphHelper.getRandomVertexFromGraph(graph));
+        return hiveRelocationVertex;
+    }
+
+    private void relocateHiveAndBee(List<BeesHive> hives, BeeAgent bee, Map<String, Integer> feedingRegionInformation, String hiveRelocationVertex, Map<String, Integer> feedingRegion) {
+        try{
             //setting new vertex
-            bee.setHiveVertex(hiveRelocationVertex);
             bee.setCurrentVertex(hiveRelocationVertex);
             //setting cleaned out feeding region information
             bee.setFeedingRegionInformation(feedingRegion);
             //getting hive
-            try{
-                //setting cleaned out feeding region information to hive
-                BeesHive hive = this.getHive(bee, hives);
-                hive.setFeedingRegionInformation(feedingRegionInformation);
-                //setting hive location for bees
-                hive.setLocationVertex(hiveRelocationVertex);
-                bee.setHiveVertex(hiveRelocationVertex);
-            } catch (BeesHiveNotFound e) {
-                System.err.println(e + ": " + e.getMessage());
-            }
+            //setting cleaned out feeding region information to hive
+            BeesHive hive = this.getHive(bee, hives);
+            hive.setFeedingRegionInformation(feedingRegionInformation);
+            //setting hive location for bees
+            hive.setLocationVertex(hiveRelocationVertex);
+            bee.setHiveVertex(hiveRelocationVertex);
+        } catch (BeesHiveNotFound e) {
+            System.err.println(e + ": " + e.getMessage());
         }
     }
 
-    public BeeRoutingHeuristic(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
+    private void shuffleBeesAndHives(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<BeeAgent> bees, List<BeesHive> hives) {
+        for (BeeAgent bee : bees) {
+            Map<String, Integer> feedingRegionInformation = bee.getFeedingRegionInformation();
+            //get uncoloured vertex from neighbourhood or get random vertex
+            String hiveRelocationVertex = this.getHiveRelocationVertex(graph, feedingRegionInformation);
+            //get new feeding region without colouring on vertex
+            Map<String, Integer> feedingRegion = this.determineFeedingRegionInformation(graph, hiveRelocationVertex);
+            this.relocateHiveAndBee(hives, bee, feedingRegionInformation, hiveRelocationVertex, feedingRegion);
+        }
+    }
+
+    public BeeColouringHeuristic(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
         this.graph = graph;
     }
 }
