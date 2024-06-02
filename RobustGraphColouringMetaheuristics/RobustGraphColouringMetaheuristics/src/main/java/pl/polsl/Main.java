@@ -1,10 +1,11 @@
 package pl.polsl;
 
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
-import pl.polsl.heuristics.AntColouringHeuristic;
-import pl.polsl.heuristics.BeeColouringHeuristic;
-import pl.polsl.heuristics.CuckooSearchHeuristic;
+import pl.polsl.metaheuristics.AntColouringHeuristic;
+import pl.polsl.metaheuristics.BeeColouringHeuristic;
+import pl.polsl.metaheuristics.CuckooSearchHeuristic;
 
 public class Main {
     public static void main(String[] args) {
@@ -41,5 +42,9 @@ public class Main {
         for(String vertex : beesColouring.keySet()) {
             System.out.println(vertex + " kolor: " + beesColouring.get(vertex));
         }
+        var graphVizu = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel4.col");
+        customWeightedGraphHelper.savingGraphVisualizationToFile(graphVizu, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"prezka0.png");
+        graphVizu = customWeightedGraphHelper.imposeUncertaintyToGraph(graphVizu, GraphConstants.PROPORTION_EDGES_TO_FUZZ, GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
+        customWeightedGraphHelper.savingGraphVisualizationToFile(graphVizu, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"prezka1.png");
     }
 }

@@ -1,4 +1,4 @@
-package pl.polsl.heuristics;
+package pl.polsl.metaheuristics;
 
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
@@ -59,5 +59,12 @@ public abstract class AbstractColouringHeuristic {
             }
         }
         return graphPenaltiesSum;
+    }
+
+    protected void getMetaheuristicsStatistics(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, double robustness, long startTime, long cpuStartTime, long cpuEndTime, long endTime) {
+        System.out.println("Execution time: " + (endTime - startTime) + "[ns]"); // nanoseconds
+        System.out.println("CPU execution time: " + (cpuEndTime - cpuStartTime) + "[ns]");// nanoseconds
+        System.out.println("Robustness: " + robustness);
+        System.out.println("Is colouring valid among solid edges: " + this.checkGraphValidityAmongSolidEdges(graph, verticesColourMap));
     }
 }

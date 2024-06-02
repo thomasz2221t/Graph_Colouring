@@ -169,7 +169,7 @@ public class CustomWeightedGraphHelper {
         }
 
         System.out.println(weightedGraph.toString());
-        this.savingGraphVisualizationToFile(weightedGraph, "src/main/java/pl/polsl/images/graphtest.png");
+        //this.savingGraphVisualizationToFile(weightedGraph, "src/main/java/pl/polsl/images/graphtest.png");
         return weightedGraph;
     }
 

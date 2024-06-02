@@ -1,4 +1,4 @@
-package pl.polsl.heuristics;
+package pl.polsl.metaheuristics;
 
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.AntAgent;
@@ -7,6 +7,8 @@ import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.*;
 
 public class AntColouringHeuristic extends AbstractColouringHeuristic {
@@ -31,6 +33,11 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         this.init();
 
         long i = 0;
+
+        ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+        long startTime = System.nanoTime();
+        long cpuStartTime = threadMxBean.getCurrentThreadCpuTime();
+
         //pętla while
         //while((i < AntColouringConstants.AntColouringMaxIterations) && (robustness > AntColouringConstants.AntColouringMinRobustness)) {
         while(i < AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS){
@@ -53,9 +60,12 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
                 this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             }
         }
+
+        long cpuEndTime = threadMxBean.getCurrentThreadCpuTime();
+        long endTime = System.nanoTime();
+
         this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
-        System.out.println("Robustness: " + robustness);
-        System.out.println("Is colouring valid among solid edges: " + this.checkGraphValidityAmongSolidEdges(this.graph, this.verticesColourMap));
+        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         System.out.println("Koniec");
         return this.verticesColourMap;

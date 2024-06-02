@@ -1,4 +1,4 @@
-package pl.polsl.heuristics;
+package pl.polsl.metaheuristics;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
@@ -9,6 +9,8 @@ import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,6 +36,11 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         this.init();
 
         long i = 0;
+
+        ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+        long startTime = System.nanoTime();
+        long cpuStartTime = threadMxBean.getCurrentThreadCpuTime();
+
         while(i < CuckooSearchConstants.CUCKOO_SEARCH_MAX_ITERATIONS) {
             //Calculating solution using Lévy flight operator
             for(int k=0; k < CuckooSearchConstants.NUMBER_OF_AGENTS; k++) {
@@ -69,9 +76,12 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
             }
             i++;
         }
+
+        long cpuEndTime = threadMxBean.getCurrentThreadCpuTime();
+        long endTime = System.nanoTime();
+
         System.out.println("Good colourings: " + numberOfCorrectSolutions);
-        System.out.println("Robustness: " + robustness);
-        System.out.println("Is colouring valid among solid edges: " + this.checkGraphValidityAmongSolidEdges(this.graph, this.verticesColourMap));
+        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         return this.verticesColourMap;
     }

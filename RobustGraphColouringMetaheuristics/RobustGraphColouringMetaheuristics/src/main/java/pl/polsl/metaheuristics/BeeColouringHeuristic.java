@@ -1,4 +1,4 @@
-package pl.polsl.heuristics;
+package pl.polsl.metaheuristics;
 
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.bees.BeeAgent;
@@ -10,6 +10,8 @@ import pl.polsl.exceptions.BeesHiveNotFound;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.*;
 
 public class BeeColouringHeuristic extends AbstractColouringHeuristic {
@@ -32,6 +34,11 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
 
         this.init();
         long i = 0;
+
+        ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+        long startTime = System.nanoTime();
+        long cpuStartTime = threadMxBean.getCurrentThreadCpuTime();
+
         while(i < BeeColouringConstants.BEE_COLOURING_MAX_ITERATIONS) {
 
             for(int k = 0; k < BeeColouringConstants.NUMBER_OF_AGENTS; k++) {
@@ -46,9 +53,12 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
             }
             i++;
         }
+
+        long cpuEndTime = threadMxBean.getCurrentThreadCpuTime();
+        long endTime = System.nanoTime();
+
         this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
-        System.out.println("Robustness: " + robustness);
-        System.out.println("Is colouring valid among solid edges: " + this.checkGraphValidityAmongSolidEdges(this.graph, this.verticesColourMap));
+        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         return this.verticesColourMap;
     }
@@ -156,10 +166,10 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         //calculating heuristic information
         //(waga * pokolorowane + waga * robustness)/ waga * odwiedzone
         double robustness = graph.getEdgeWeight(edge);
-        double colouringValidity =  verticesColourMap.get(vertex) > 0 ? 1 : 0;
+        double vertexColoured =  verticesColourMap.get(vertex) > 0 ? 1 : 0;
         double vertexVisited = bee.getVisitedVertexMemory().contains(vertex) ? 1 : 0;
         double heuristicInformation = BeeColouringConstants.HEURISTIC_INFO_ROBUSTNESS_FACTOR * robustness
-                + BeeColouringConstants.HEURISTIC_INFO_COLOURING_VALIDITY_FACTOR * colouringValidity
+                + BeeColouringConstants.HEURISTIC_INFO_COLOURING_VALIDITY_FACTOR * vertexColoured
                 / BeeColouringConstants.HEURISTIC_INFO_VERTEX_VISITED_FACTOR * vertexVisited;
         probabilitesSum += heuristicInformation;
         passingProbabilites.put(vertex, heuristicInformation);
