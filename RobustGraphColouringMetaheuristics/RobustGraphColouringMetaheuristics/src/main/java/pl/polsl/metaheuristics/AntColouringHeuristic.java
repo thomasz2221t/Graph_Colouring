@@ -40,7 +40,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
 
         //pętla while
         //while((i < AntColouringConstants.AntColouringMaxIterations) && (robustness > AntColouringConstants.AntColouringMinRobustness)) {
-        while(i < AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS){
+        while(i < AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS) {
 //            if(robustness < AntColouringConstants.AntColouringMinRobustness) {
 //                break;
 //            }
@@ -55,7 +55,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
             //local search
             this.localSearchProcedure(this.graph);
             i++;
-            System.out.println(i);
+            //System.out.println(i);
             if(i % AntColouringConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
                 this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             }
@@ -150,7 +150,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
     }
 
     private void assignColourToVertex(AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList) {
-        Integer oldColourIndex = verticesColourMap.get(ant.getCurrentVertex());
+        Integer oldColourIndex = this.verticesColourMap.get(ant.getCurrentVertex());
         Integer newColourIndex = -1;
         for (Integer colourIndex : this.coloursMap.keySet()) {
             if(colourIndex == 0)

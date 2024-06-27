@@ -23,7 +23,10 @@ public class Main {
         //customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel3.col");
 //        final var dimacsDataset = customWeightedGraph.importDIMACSBenchmarkDatasetAsUndirected("D:\\GraphColouring\\instances");
 //        System.out.println(dimacsDataset.size());
-        DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel3.col");
+        DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\anna.col");
+        //DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel3.col");
+        System.out.println("Graph vertices set number: " + graph.vertexSet().size());
+        System.out.println("Graph edges set number: " + graph.edgeSet().size());
         //============================================Mrówkowa heurysytka===============================================//
         AntColouringHeuristic antColouringHeuristic = new AntColouringHeuristic(graph);
         var graphColouring = antColouringHeuristic.colourTheGraph();
