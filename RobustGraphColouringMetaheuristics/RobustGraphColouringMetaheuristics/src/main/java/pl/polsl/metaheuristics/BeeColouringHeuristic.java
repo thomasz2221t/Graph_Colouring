@@ -25,12 +25,12 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
 
     public Map<String, Integer> colourTheGraph() {
 
-        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
-                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
-                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
-        //only for testing
-        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
-                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"bees.png");
+//        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
+//                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
+//                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
+//        //only for testing
+//        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
+//                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"bees.png");
 
         this.init();
         long i = 0;

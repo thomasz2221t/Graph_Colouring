@@ -26,12 +26,12 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
 
     public Map<String, Integer> colourTheGraph() {
 
-        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
-                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
-                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
-        //only for testing
-        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
-                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"cuckoo.png");
+//        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
+//                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
+//                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
+//        //only for testing
+//        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
+//                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"cuckoo.png");
 
         this.init();
 
