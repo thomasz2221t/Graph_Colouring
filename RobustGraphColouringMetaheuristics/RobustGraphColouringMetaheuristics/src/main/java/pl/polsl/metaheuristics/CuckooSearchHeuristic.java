@@ -204,14 +204,6 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         return originalSolution;
     }
 
-    private int choosingVerticesToModifyUsingNormalDistribution(int numberOfVerticesInGraph, int standardDeviationDivisionFactor) {
-        double arithmeticalMean = (double) numberOfVerticesInGraph / 2;
-        double standardDeviation = (double) numberOfVerticesInGraph / standardDeviationDivisionFactor;
-        NormalDistribution vertexNumberNormalDistribution = new NormalDistribution(arithmeticalMean, standardDeviation);
-        double M = vertexNumberNormalDistribution.sample();
-        return (int) Math.floor(M);
-    }
-
     private Map<String, Integer> evaluateBestCuckooSolution(List<CuckooAgent> cuckoos) {
         double bestFitnessValue = 0;//cuckoos.get(0).getSolutionFitting();
         int bestSolutionIndex = 0;

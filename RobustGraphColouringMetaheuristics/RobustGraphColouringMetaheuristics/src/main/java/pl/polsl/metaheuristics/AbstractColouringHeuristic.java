@@ -1,5 +1,6 @@
 package pl.polsl.metaheuristics;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
@@ -28,6 +29,13 @@ public abstract class AbstractColouringHeuristic {
         return coloursMap;
     }
 
+    protected int choosingVerticesToModifyUsingNormalDistribution(int numberOfVerticesInGraph, int standardDeviationDivisionFactor) {
+        double arithmeticalMean = (double) numberOfVerticesInGraph / 2;
+        double standardDeviation = (double) numberOfVerticesInGraph / standardDeviationDivisionFactor;
+        NormalDistribution vertexNumberNormalDistribution = new NormalDistribution(arithmeticalMean, standardDeviation);
+        double M = vertexNumberNormalDistribution.sample();
+        return (int) Math.floor(M);
+    }
 
     protected boolean checkIfColourIsValid(Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList, Map<String, Integer> verticesColourMap, Integer randomColour) {
         for (String vertex : randomVertexNeighbourhoodList.keySet()) {

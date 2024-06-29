@@ -11,4 +11,5 @@ public final class StorkFeedingConstants {
     public static final double GOOD_COLOURING_FITNESS = 0.8;
     public  static final double MODERATE_COLOURING_FITNESS = 0.3;
     public static final double LOW_COLOURING_FITNESS = 0.0;
+    public static final int SIGHT_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR = 2;
 }

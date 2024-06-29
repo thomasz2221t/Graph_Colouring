@@ -146,7 +146,7 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         Integer minimalColour = Collections.min(neighbourColours.entrySet(), Map.Entry.comparingByValue()).getKey();
         //update bee information
         bee.updateFeedingRegionInformation(bee.getCurrentVertex(), minimalColour);
-        //update obserwator colour
+        //update supervisor colour
         verticesColourMap.replace(bee.getCurrentVertex(), minimalColour);
         //update coloursMap
         coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
