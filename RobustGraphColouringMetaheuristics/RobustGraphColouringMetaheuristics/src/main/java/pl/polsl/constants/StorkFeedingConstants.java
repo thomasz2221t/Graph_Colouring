@@ -12,4 +12,8 @@ public final class StorkFeedingConstants {
     public  static final double MODERATE_COLOURING_FITNESS = 0.3;
     public static final double LOW_COLOURING_FITNESS = 0.0;
     public static final int SIGHT_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR = 2;
+    public static final double HEURISTIC_INFO_ROBUSTNESS_FACTOR = 0.2;
+    public static final double HEURISTIC_INFO_VERTEX_VISITED_FACTOR = 0.2;
+    public static final double HEURISTIC_INFO_VERTEX_FITNESS_FACTOR = 0.5;
+    public static final double ROBUSTNESS_UPDATE_INTERVAL = 1000;
 }

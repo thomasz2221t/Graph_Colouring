@@ -5,7 +5,6 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.util.MathUtil;
 import pl.polsl.agents.CuckooAgent;
 import pl.polsl.constants.CuckooSearchConstants;
-import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
@@ -81,7 +80,7 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         long endTime = System.nanoTime();
 
         System.out.println("Good colourings: " + numberOfCorrectSolutions);
-        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         return this.verticesColourMap;
     }

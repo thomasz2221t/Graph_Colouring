@@ -2,7 +2,6 @@ package pl.polsl.metaheuristics;
 
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.StorkAgent;
-import pl.polsl.constants.CuckooSearchConstants;
 import pl.polsl.constants.StorkFeedingConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
@@ -33,12 +32,16 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
                 this.storkOptimisation(this.graph, this.verticesColourMap, this.coloursMap, stork);
             }
             i++;
+            //only for checking robustness criterium
+            if(i % StorkFeedingConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
+                this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
+            }
         }
         long cpuEndTime = threadMxBean.getCurrentThreadCpuTime();
         long endTime = System.nanoTime();
 
         this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
-        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         return this.verticesColourMap;
     }
@@ -61,7 +64,7 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         return storks;
     }
 
-    private double calculatePrecisionFitnessFunction(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhoodList, String currentVertex) {
+    private double calculatePrecisionFitnessFunction(Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhoodList, String currentVertex) {
         Integer currentVertexColour = verticesColourMap.get(currentVertex);
         int correctColours = 0;
         for(String vertex : neighbourhoodList.keySet()) {
@@ -153,10 +156,42 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         this.applyColouring(verticesColourMap, coloursMap, currentVertex, oldColour, minimalColour);
     }
 
+    private double calculatePassingProbability(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhoodMap, StorkAgent stork, Map<String, Double> passingProbabilites, double probabilitesSum, String vertex) {
+        //find edge
+        CustomWeightedEdge edge = graph.getEdge(stork.getCurrentVertex(), vertex) != null
+                ? graph.getEdge(stork.getCurrentVertex(), vertex)
+                : graph.getEdge(vertex, stork.getCurrentVertex());
+        //calculating heuristic information
+        //(waga * robustness)/ (waga * odwiedzone + waga * fitness)
+        double robustness = graph.getEdgeWeight(edge);
+        double vertexFitness =  this.calculatePrecisionFitnessFunction(verticesColourMap, neighbourhoodMap, vertex);
+        double vertexVisited = stork.getVisitedVertexMemory().contains(vertex) ? 1 : 0;
+        double heuristicInformation = StorkFeedingConstants.HEURISTIC_INFO_ROBUSTNESS_FACTOR * robustness
+                / (StorkFeedingConstants.HEURISTIC_INFO_VERTEX_VISITED_FACTOR * vertexVisited + StorkFeedingConstants.HEURISTIC_INFO_VERTEX_FITNESS_FACTOR * vertexFitness);
+        probabilitesSum += heuristicInformation;
+        passingProbabilites.put(vertex, heuristicInformation);
+        return probabilitesSum;
+    }
+
+    private String estimateNewRouteForStork(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhood, StorkAgent stork) {
+        Map<String, Double> passingProbabilites = new HashMap<>();
+        double probabilitesSum = 0.0;
+
+        for (String vertex : neighbourhood.keySet()) {
+            probabilitesSum = this.calculatePassingProbability(graph, verticesColourMap, neighbourhood, stork, passingProbabilites, probabilitesSum, vertex);
+        }
+        return this.estimateRouteByProbabilites(passingProbabilites, probabilitesSum);
+    }
+
+    private void relocateStorkToNextVertex(StorkAgent stork, String nextVertex) {
+        stork.setCurrentVertex(nextVertex);
+        stork.memorizeNewVisitedVertex(nextVertex);
+    }
+
     private void storkOptimisation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, StorkAgent stork) {
         String currentVertex = stork.getCurrentVertex();
         Map<String, CustomWeightedEdge> neighbourhoodMap = this.customWeightedGraphHelper.getNeighbourhoodListOfVertex(graph, currentVertex);
-        double fitnessValue = this.calculatePrecisionFitnessFunction(graph, verticesColourMap, neighbourhoodMap, currentVertex);
+        double fitnessValue = this.calculatePrecisionFitnessFunction(verticesColourMap, neighbourhoodMap, currentVertex);
 
         if (fitnessValue < StorkFeedingConstants.GOOD_COLOURING_FITNESS && fitnessValue >= StorkFeedingConstants.MODERATE_COLOURING_FITNESS) {
             //moderate colouring - dSatur for vertex / animal sight, dstaur based on part of neighbourhood
@@ -171,6 +206,7 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
             //low colouring - dSatur for neighbourhood / dsatur for vertex
             this.colouringVertexWithDSatur(verticesColourMap, coloursMap, neighbourhoodMap, currentVertex);
         }
+        this.relocateStorkToNextVertex(stork, this.estimateNewRouteForStork(graph, verticesColourMap, neighbourhoodMap, stork));
     }
 
     public StorkFeedingHeuristic(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph) {

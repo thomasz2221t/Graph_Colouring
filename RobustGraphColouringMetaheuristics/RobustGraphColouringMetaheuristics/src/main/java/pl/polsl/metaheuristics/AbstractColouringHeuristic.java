@@ -67,6 +67,17 @@ public abstract class AbstractColouringHeuristic {
         coloursMap.replace(newColour, coloursMap.get(newColour) + 1);
     }
 
+    protected String estimateRouteByProbabilites(Map<String, Double> passingProbabilites, double probabilitesSum) {
+        //picking random vertex based on heuristic information as weight
+        int index = 0;
+        List<String> verticesList = passingProbabilites.keySet().stream().toList();
+        for(double random = Math.random() * probabilitesSum; index < passingProbabilites.size() - 1; ++index) {
+            random -= passingProbabilites.get(verticesList.get(index));
+            if(random <= 0.0) break;
+        }
+        return verticesList.get(index);
+    }
+
     protected boolean checkGraphValidityAmongSolidEdges(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {
         for(CustomWeightedGraphHelper.CustomWeightedEdge edge : graph.edgeSet()) {
             Integer sourceVertexColour = verticesColourMap.get(graph.getEdgeSource(edge));

@@ -3,13 +3,15 @@ package pl.polsl.metaheuristics;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.AntAgent;
 import pl.polsl.constants.AntColouringConstants;
-import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AntColouringHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
@@ -56,6 +58,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
             this.localSearchProcedure(this.graph);
             i++;
             //System.out.println(i);
+            //only for checking robustness criterium
             if(i % AntColouringConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
                 this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             }
@@ -65,7 +68,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         long endTime = System.nanoTime();
 
         this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
-        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         System.out.println("Koniec");
         return this.verticesColourMap;
