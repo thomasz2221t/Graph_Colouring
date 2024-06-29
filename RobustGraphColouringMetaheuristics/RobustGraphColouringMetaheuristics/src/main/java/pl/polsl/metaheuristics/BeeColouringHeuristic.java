@@ -147,10 +147,11 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         //update bee information
         bee.updateFeedingRegionInformation(bee.getCurrentVertex(), minimalColour);
         //update supervisor colour
-        verticesColourMap.replace(bee.getCurrentVertex(), minimalColour);
+        //verticesColourMap.replace(bee.getCurrentVertex(), minimalColour);
         //update coloursMap
-        coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
-        coloursMap.replace(minimalColour, coloursMap.get(minimalColour) + 1);
+        //coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
+        //coloursMap.replace(minimalColour, coloursMap.get(minimalColour) + 1);
+        this.applyColouring(verticesColourMap, coloursMap, bee.getCurrentVertex(), oldColour, minimalColour);
         return neighbourhoodMap;
     }
 

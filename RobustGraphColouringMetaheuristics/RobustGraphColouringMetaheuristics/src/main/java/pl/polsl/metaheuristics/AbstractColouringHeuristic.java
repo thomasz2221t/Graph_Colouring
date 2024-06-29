@@ -8,6 +8,7 @@ import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 public abstract class AbstractColouringHeuristic {
 
@@ -37,6 +38,18 @@ public abstract class AbstractColouringHeuristic {
         return (int) Math.floor(M);
     }
 
+    protected Integer randomlySelectColour(Map<Integer, Integer> coloursMap) {
+        Random random = new Random();
+        Integer randomColour = -1;
+        randomColour = coloursMap
+                .keySet()
+                .stream()
+                .skip(random.nextInt(coloursMap.size() - 1) + 1)
+                .findFirst()
+                .orElse(-1);
+        return randomColour;
+    }
+
     protected boolean checkIfColourIsValid(Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList, Map<String, Integer> verticesColourMap, Integer randomColour) {
         for (String vertex : randomVertexNeighbourhoodList.keySet()) {
             if (verticesColourMap.get(vertex) == randomColour) {
@@ -44,6 +57,14 @@ public abstract class AbstractColouringHeuristic {
             }
         }
         return true;
+    }
+
+    protected void applyColouring(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, String currentVertex, Integer oldColour, Integer newColour) {
+        //update supervisor colour
+        verticesColourMap.replace(currentVertex, newColour);
+        //update coloursMap
+        coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
+        coloursMap.replace(newColour, coloursMap.get(newColour) + 1);
     }
 
     protected boolean checkGraphValidityAmongSolidEdges(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {

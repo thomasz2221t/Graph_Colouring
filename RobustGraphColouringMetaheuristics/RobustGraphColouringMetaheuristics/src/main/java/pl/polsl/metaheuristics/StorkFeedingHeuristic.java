@@ -76,18 +76,28 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         int numberOfVertices = this.choosingVerticesToModifyUsingNormalDistribution(neighbourhoodMap.size(), StorkFeedingConstants.SIGHT_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR);
         System.out.println("Normal deviation result: " + numberOfVertices);
         numberOfVertices = Math.min(numberOfVertices, neighbourhoodMap.size());
-        List<Integer> randomValues = new Random()
-                .ints(0, neighbourhoodMap.size())
-                .distinct()
+//        List<Integer> randomValues = new Random()
+//                .ints(0, neighbourhoodMap.size())
+//                .distinct()
+//                .limit(numberOfVertices)
+//                .boxed()
+//                .toList();
+        Random random = new Random();
+        List<String> randomVertices = neighbourhoodMap
+                .keySet()
+                .stream()
+                .skip(random.nextInt(neighbourhoodMap.size()))
                 .limit(numberOfVertices)
-                .boxed()
                 .toList();
         Map<String, CustomWeightedEdge> reducedNeighbourhood = new HashMap<>();
-        List<String> neighbourhoodVertices = neighbourhoodMap.keySet().stream().toList();
-        for (Integer randomValue : randomValues) {
-            String vertex = neighbourhoodVertices.get(randomValue);
-            reducedNeighbourhood.put(vertex,neighbourhoodMap.get(vertex));
+        for(String vertex : randomVertices) {
+            reducedNeighbourhood.put(vertex, neighbourhoodMap.get(vertex));
         }
+//        List<String> neighbourhoodVertices = neighbourhoodMap.keySet().stream().toList();
+//        for (Integer randomValue : randomValues) {
+//            String vertex = neighbourhoodVertices.get(randomValue);
+//            reducedNeighbourhood.put(vertex,neighbourhoodMap.get(vertex));
+//        }
         return reducedNeighbourhood;
     }
 
@@ -95,6 +105,33 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         //TODO: If necessary implement rejecting solution if it makes fitting worse
         Map<String, CustomWeightedEdge> reducedNeighbourhood = this.animalSightNeighbourhoodSelection(neighbourhoodMap);
         this.colouringVertexWithDSatur(verticesColourMap, coloursMap, reducedNeighbourhood, currentVertex);
+    }
+
+    private void greedyColourReductionOptimization(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, Map<String, CustomWeightedEdge> neighbourhoodMap,  String currentVertex) {
+        //zapisanie poprzedniego koloru
+        Integer currentColour = verticesColourMap.get(currentVertex);
+        Integer currentColourOccurrence = coloursMap.get(currentColour);
+        //checking colour changing on
+        for(Integer colour : coloursMap.keySet()) {
+            Integer colourOccurrence = coloursMap.get(colour);
+            if(currentColourOccurrence > colourOccurrence && checkIfColourIsValid(neighbourhoodMap, verticesColourMap, colour)) {
+                currentColour = colour;
+                currentColourOccurrence = colourOccurrence;
+            }
+        }
+        if(!Objects.equals(verticesColourMap.get(currentVertex), currentColour)) {
+            this.applyColouring(verticesColourMap, coloursMap, currentVertex, verticesColourMap.get(currentVertex), currentColour);
+        }
+    }
+
+    private void stochasticSolutionOptimization(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, Map<String, CustomWeightedEdge> neighbourhoodMap, String currentVertex) {
+        Integer oldColour = verticesColourMap.get(currentVertex);
+        Integer randomColour = this.randomlySelectColour(coloursMap);
+        boolean isRandomColourValid = checkIfColourIsValid(neighbourhoodMap, verticesColourMap, randomColour);
+        //check if colouring is valid, if so approve changes and update pheromone
+        if (isRandomColourValid) {
+            this.applyColouring(verticesColourMap, coloursMap, currentVertex, oldColour, randomColour);
+        }
     }
 
     private void colouringVertexWithDSatur(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, Map<String, CustomWeightedEdge> neighbourhoodMap, String currentVertex){
@@ -113,10 +150,7 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         //get minimal colour
         Integer minimalColour = Collections.min(neighbourColours.entrySet(), Map.Entry.comparingByValue()).getKey();
         //update supervisor colour
-        verticesColourMap.replace(currentVertex, minimalColour);
-        //update coloursMap
-        coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
-        coloursMap.replace(minimalColour, coloursMap.get(minimalColour) + 1);
+        this.applyColouring(verticesColourMap, coloursMap, currentVertex, oldColour, minimalColour);
     }
 
     private void storkOptimisation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, StorkAgent stork) {
@@ -126,11 +160,13 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
 
         if (fitnessValue < StorkFeedingConstants.GOOD_COLOURING_FITNESS && fitnessValue >= StorkFeedingConstants.MODERATE_COLOURING_FITNESS) {
             //moderate colouring - dSatur for vertex / animal sight, dstaur based on part of neighbourhood
-            colouringWithDSaturOnReducedNeignbourhood(verticesColourMap, coloursMap, currentVertex, neighbourhoodMap);
+            this.colouringWithDSaturOnReducedNeignbourhood(verticesColourMap, coloursMap, currentVertex, neighbourhoodMap);
         } else if(fitnessValue >= StorkFeedingConstants.PERFECT_COLOURING_FITNESS) {
             //perfect colouring - colour improvement
+            this.greedyColourReductionOptimization(verticesColourMap, coloursMap, neighbourhoodMap, currentVertex);
         } else if (fitnessValue >= StorkFeedingConstants.GOOD_COLOURING_FITNESS) {//&& fitnessValue < StorkFeedingConstants.PERFECT_COLOURING_FITNESS) {
             //good colouring - colouring improvement
+            this.stochasticSolutionOptimization(verticesColourMap, coloursMap, neighbourhoodMap, currentVertex);
         } else if (fitnessValue < StorkFeedingConstants.MODERATE_COLOURING_FITNESS && fitnessValue >= StorkFeedingConstants.LOW_COLOURING_FITNESS) {
             //low colouring - dSatur for neighbourhood / dsatur for vertex
             this.colouringVertexWithDSatur(verticesColourMap, coloursMap, neighbourhoodMap, currentVertex);

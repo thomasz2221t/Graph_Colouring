@@ -266,18 +266,6 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         ant.setCurrentVertex(nextVertex);
     }
 
-    private Integer randomlySelectColour() {
-        Random random = new Random();
-        Integer randomColour = -1;
-        randomColour = this.coloursMap
-                .keySet()
-                .stream()
-                .skip(random.nextInt(coloursMap.size() - 1) + 1)
-                .findFirst()
-                .orElse(null);
-        return randomColour;
-    }
-
     private void imposeColouringAndUpdatePheromone(String randomVertex, Integer randomColour) {
         Integer oldColour = this.verticesColourMap.get(randomVertex);
         this.verticesColourMap.replace(randomVertex, randomColour);
@@ -295,7 +283,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         if (this.coloursMap.size() > 1) {
             String randomVertex = this.customWeightedGraphHelper.getRandomVertexFromGraph(graph);//get random vertex from graph
             //randomly select colour
-            Integer randomColour = this.randomlySelectColour();
+            Integer randomColour = this.randomlySelectColour(this.coloursMap);
             Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList = customWeightedGraphHelper.
                     getNeighbourhoodListOfVertex(this.graph, randomVertex);
             boolean isRandomColourValid = checkIfColourIsValid(randomVertexNeighbourhoodList,this.verticesColourMap, randomColour);
