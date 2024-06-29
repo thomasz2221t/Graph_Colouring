@@ -76,8 +76,9 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
     }
 
     private Map<String, CustomWeightedEdge> animalSightNeighbourhoodSelection(Map<String, CustomWeightedEdge> neighbourhoodMap){
-        int numberOfVertices = this.choosingVerticesToModifyUsingNormalDistribution(neighbourhoodMap.size(), StorkFeedingConstants.SIGHT_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR);
+        int numberOfVertices = this.choosingVerticesToModifyUsingNormalDistribution(neighbourhoodMap.keySet().size(), StorkFeedingConstants.SIGHT_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR);
         System.out.println("Normal deviation result: " + numberOfVertices);
+        numberOfVertices = Math.max(numberOfVertices, 1);
         numberOfVertices = Math.min(numberOfVertices, neighbourhoodMap.size());
 //        List<Integer> randomValues = new Random()
 //                .ints(0, neighbourhoodMap.size())
