@@ -77,7 +77,6 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
 
     private Map<String, CustomWeightedEdge> animalSightNeighbourhoodSelection(Map<String, CustomWeightedEdge> neighbourhoodMap){
         int numberOfVertices = this.choosingVerticesToModifyUsingNormalDistribution(neighbourhoodMap.keySet().size(), StorkFeedingConstants.SIGHT_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR);
-        System.out.println("Normal deviation result: " + numberOfVertices);
         numberOfVertices = Math.max(numberOfVertices, 1);
         numberOfVertices = Math.min(numberOfVertices, neighbourhoodMap.size());
 //        List<Integer> randomValues = new Random()
@@ -106,7 +105,6 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
     }
 
     private void colouringWithDSaturOnReducedNeignbourhood(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, String currentVertex, Map<String, CustomWeightedEdge> neighbourhoodMap) {
-        //TODO: If necessary implement rejecting solution if it makes fitting worse
         Map<String, CustomWeightedEdge> reducedNeighbourhood = this.animalSightNeighbourhoodSelection(neighbourhoodMap);
         this.colouringVertexWithDSatur(verticesColourMap, coloursMap, reducedNeighbourhood, currentVertex);
     }
@@ -168,7 +166,8 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         double vertexFitness =  this.calculatePrecisionFitnessFunction(verticesColourMap, neighbourhoodMap, vertex);
         double vertexVisited = stork.getVisitedVertexMemory().contains(vertex) ? 1 : 0;
         double heuristicInformation = StorkFeedingConstants.HEURISTIC_INFO_ROBUSTNESS_FACTOR * robustness
-                / (StorkFeedingConstants.HEURISTIC_INFO_VERTEX_VISITED_FACTOR * vertexVisited + StorkFeedingConstants.HEURISTIC_INFO_VERTEX_FITNESS_FACTOR * vertexFitness);
+                / (StorkFeedingConstants.HEURISTIC_INFO_VERTEX_VISITED_FACTOR * vertexVisited
+                + StorkFeedingConstants.HEURISTIC_INFO_VERTEX_FITNESS_FACTOR * vertexFitness);
         probabilitesSum += heuristicInformation;
         passingProbabilites.put(vertex, heuristicInformation);
         return probabilitesSum;
