@@ -1,5 +1,6 @@
 package pl.polsl.metaheuristics;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
@@ -7,6 +8,7 @@ import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 public abstract class AbstractColouringHeuristic {
 
@@ -28,6 +30,25 @@ public abstract class AbstractColouringHeuristic {
         return coloursMap;
     }
 
+    protected int choosingVerticesToModifyUsingNormalDistribution(int numberOfVerticesInGraph, int standardDeviationDivisionFactor) {
+        double arithmeticalMean = (double) numberOfVerticesInGraph / 2;
+        double standardDeviation = (double) numberOfVerticesInGraph / standardDeviationDivisionFactor;
+        NormalDistribution vertexNumberNormalDistribution = new NormalDistribution(arithmeticalMean, standardDeviation);
+        double M = vertexNumberNormalDistribution.sample();
+        return (int) Math.floor(M);
+    }
+
+    protected Integer randomlySelectColour(Map<Integer, Integer> coloursMap) {
+        Random random = new Random();
+        Integer randomColour = -1;
+        randomColour = coloursMap
+                .keySet()
+                .stream()
+                .skip(random.nextInt(coloursMap.size() - 1) + 1)
+                .findFirst()
+                .orElse(-1);
+        return randomColour;
+    }
 
     protected boolean checkIfColourIsValid(Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList, Map<String, Integer> verticesColourMap, Integer randomColour) {
         for (String vertex : randomVertexNeighbourhoodList.keySet()) {
@@ -36,6 +57,25 @@ public abstract class AbstractColouringHeuristic {
             }
         }
         return true;
+    }
+
+    protected void applyColouring(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, String currentVertex, Integer oldColour, Integer newColour) {
+        //update supervisor colour
+        verticesColourMap.replace(currentVertex, newColour);
+        //update coloursMap
+        coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
+        coloursMap.replace(newColour, coloursMap.get(newColour) + 1);
+    }
+
+    protected String estimateRouteByProbabilites(Map<String, Double> passingProbabilites, double probabilitesSum) {
+        //picking random vertex based on heuristic information as weight
+        int index = 0;
+        List<String> verticesList = passingProbabilites.keySet().stream().toList();
+        for(double random = Math.random() * probabilitesSum; index < passingProbabilites.size() - 1; ++index) {
+            random -= passingProbabilites.get(verticesList.get(index));
+            if(random <= 0.0) break;
+        }
+        return verticesList.get(index);
     }
 
     protected boolean checkGraphValidityAmongSolidEdges(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {

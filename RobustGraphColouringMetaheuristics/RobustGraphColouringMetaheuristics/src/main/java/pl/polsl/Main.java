@@ -6,6 +6,7 @@ import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.metaheuristics.AntColouringHeuristic;
 import pl.polsl.metaheuristics.BeeColouringHeuristic;
 import pl.polsl.metaheuristics.CuckooSearchHeuristic;
+import pl.polsl.metaheuristics.StorkFeedingHeuristic;
 
 public class Main {
     public static void main(String[] args) {
@@ -24,6 +25,11 @@ public class Main {
 //        final var dimacsDataset = customWeightedGraph.importDIMACSBenchmarkDatasetAsUndirected("D:\\GraphColouring\\instances");
 //        System.out.println(dimacsDataset.size());
         DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\anna.col");
+        graph = customWeightedGraphHelper.imposeUncertaintyToGraph(graph,
+                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
+                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
+        //only for testing
+        customWeightedGraphHelper.savingGraphVisualizationToFile(graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY + "uncertainty.png");
         //DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel3.col");
         System.out.println("Graph vertices set number: " + graph.vertexSet().size());
         System.out.println("Graph edges set number: " + graph.edgeSet().size());
@@ -44,6 +50,12 @@ public class Main {
         var beesColouring = beeColouringHeuristic.colourTheGraph();
         for(String vertex : beesColouring.keySet()) {
             System.out.println(vertex + " kolor: " + beesColouring.get(vertex));
+        }
+        //============================================Bociania heurysytka===============================================//
+        StorkFeedingHeuristic storkFeedingHeuristic = new StorkFeedingHeuristic(graph);
+        var storkColouring = storkFeedingHeuristic.colourTheGraph();
+        for(String vertex : storkColouring.keySet()) {
+            System.out.println(vertex + " kolor: " + storkColouring.get(vertex));
         }
         var graphVizu = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel4.col");
         customWeightedGraphHelper.savingGraphVisualizationToFile(graphVizu, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"prezka0.png");

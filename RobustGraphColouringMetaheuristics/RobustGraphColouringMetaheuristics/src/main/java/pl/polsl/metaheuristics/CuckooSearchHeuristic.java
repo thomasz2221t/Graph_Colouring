@@ -5,7 +5,6 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.util.MathUtil;
 import pl.polsl.agents.CuckooAgent;
 import pl.polsl.constants.CuckooSearchConstants;
-import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
@@ -26,12 +25,12 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
 
     public Map<String, Integer> colourTheGraph() {
 
-        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
-                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
-                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
-        //only for testing
-        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
-                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"cuckoo.png");
+//        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
+//                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
+//                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
+//        //only for testing
+//        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
+//                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"cuckoo.png");
 
         this.init();
 
@@ -81,7 +80,7 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         long endTime = System.nanoTime();
 
         System.out.println("Good colourings: " + numberOfCorrectSolutions);
-        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         return this.verticesColourMap;
     }
@@ -202,14 +201,6 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
             return mutatedSolution;//przepisanie do zmiennej klasowej, musi zostać
         }
         return originalSolution;
-    }
-
-    private int choosingVerticesToModifyUsingNormalDistribution(int numberOfVerticesInGraph, int standardDeviationDivisionFactor) {
-        double arithmeticalMean = (double) numberOfVerticesInGraph / 2;
-        double standardDeviation = (double) numberOfVerticesInGraph / standardDeviationDivisionFactor;
-        NormalDistribution vertexNumberNormalDistribution = new NormalDistribution(arithmeticalMean, standardDeviation);
-        double M = vertexNumberNormalDistribution.sample();
-        return (int) Math.floor(M);
     }
 
     private Map<String, Integer> evaluateBestCuckooSolution(List<CuckooAgent> cuckoos) {

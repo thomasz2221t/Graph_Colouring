@@ -4,7 +4,6 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.bees.BeeAgent;
 import pl.polsl.agents.bees.BeesHive;
 import pl.polsl.constants.BeeColouringConstants;
-import pl.polsl.constants.GraphConstants;
 import pl.polsl.enums.BeeAgentType;
 import pl.polsl.exceptions.BeesHiveNotFound;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
@@ -25,12 +24,12 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
 
     public Map<String, Integer> colourTheGraph() {
 
-        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
-                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
-                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
-        //only for testing
-        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
-                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"bees.png");
+//        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
+//                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
+//                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
+//        //only for testing
+//        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
+//                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"bees.png");
 
         this.init();
         long i = 0;
@@ -48,17 +47,18 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
             if(i % BeeColouringConstants.HIVES_SHUFFLE_ITERATION_PERIOD == 0) {
                 this.shuffleBeesAndHives(this.graph, this.bees, this.beesHives);
             }
+            i++;
+            //only for checking robustness criterium
             if(i % BeeColouringConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
                 this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             }
-            i++;
         }
 
         long cpuEndTime = threadMxBean.getCurrentThreadCpuTime();
         long endTime = System.nanoTime();
 
         this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
-        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         return this.verticesColourMap;
     }
@@ -146,15 +146,16 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         Integer minimalColour = Collections.min(neighbourColours.entrySet(), Map.Entry.comparingByValue()).getKey();
         //update bee information
         bee.updateFeedingRegionInformation(bee.getCurrentVertex(), minimalColour);
-        //update obserwator colour
-        verticesColourMap.replace(bee.getCurrentVertex(), minimalColour);
+        //update supervisor colour
+        //verticesColourMap.replace(bee.getCurrentVertex(), minimalColour);
         //update coloursMap
-        coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
-        coloursMap.replace(minimalColour, coloursMap.get(minimalColour) + 1);
+        //coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
+        //coloursMap.replace(minimalColour, coloursMap.get(minimalColour) + 1);
+        this.applyColouring(verticesColourMap, coloursMap, bee.getCurrentVertex(), oldColour, minimalColour);
         return neighbourhoodMap;
     }
 
-    private double calculatePassingProbability(BeeAgent bee, Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhood, Map<String, Double> passingProbabilites, BeesHive hive, double probabilitesSum, String vertex) {
+    private double calculatePassingProbability(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, BeeAgent bee, Map<String, CustomWeightedEdge> neighbourhood, Map<String, Double> passingProbabilites, BeesHive hive, double probabilitesSum, String vertex) {
         if(bee.getType() == BeeAgentType.WORKER && !hive.getFeedingRegionInformation().containsKey(vertex)) {
             //pruning routes to feeding region
             neighbourhood.remove(vertex);
@@ -176,24 +177,13 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         return probabilitesSum;
     }
 
-    private String estimateRouteByProbabilites(Map<String, Double> passingProbabilites, double probabilitesSum) {
-        //picking random vertex based on heuristic information as weight
-        int index = 0;
-        List<String> verticesList = passingProbabilites.keySet().stream().toList();
-        for(double random = Math.random() * probabilitesSum; index < passingProbabilites.size() - 1; ++index) {
-            random -= passingProbabilites.get(verticesList.get(index));
-            if(random <= 0.0) break;
-        }
-        return verticesList.get(index);
-    }
-
-    private String estimateNewRouteForBee(BeeAgent bee, Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhood, BeesHive hive) {
+    private String estimateNewRouteForBee(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, BeeAgent bee, Map<String, CustomWeightedEdge> neighbourhood, BeesHive hive) {
         //probability criterion based on
         Map<String, Double> passingProbabilites = new HashMap<>();
         double probabilitesSum = 0.0;
 
         for (String vertex : neighbourhood.keySet()) {
-            probabilitesSum = calculatePassingProbability(bee, verticesColourMap, neighbourhood, passingProbabilites, hive, probabilitesSum, vertex);
+            probabilitesSum = this.calculatePassingProbability(graph, verticesColourMap, bee, neighbourhood, passingProbabilites, hive, probabilitesSum, vertex);
         }
         return this.estimateRouteByProbabilites(passingProbabilites, probabilitesSum);
     }
@@ -229,7 +219,7 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
                 //colour vertex and synchronise information about each neighbour vertex
                 Map<String, CustomWeightedEdge> neighbourhood = this.colourVertexWithDSaturAndReturnNeighbourhood(graph, verticesColourMap, coloursMap, bee);
                 //calculate probability + heuristic information
-                String nextVertex = this.estimateNewRouteForBee(bee, verticesColourMap, neighbourhood, hive);
+                String nextVertex = this.estimateNewRouteForBee(graph, verticesColourMap, bee, neighbourhood, hive);
                 //change node
                 this.moveBeeToNextRoute(bee, nextVertex);
             }

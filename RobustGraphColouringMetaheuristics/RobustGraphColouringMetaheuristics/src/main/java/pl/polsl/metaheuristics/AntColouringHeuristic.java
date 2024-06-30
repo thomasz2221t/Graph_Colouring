@@ -3,13 +3,15 @@ package pl.polsl.metaheuristics;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.AntAgent;
 import pl.polsl.constants.AntColouringConstants;
-import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AntColouringHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
@@ -25,11 +27,11 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         /////Przygotowanie zasobów/////
         //////////////////////////////
         //przygotowanie grafu
-        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
-                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
-                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
-        //only for testing
-        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY + "uncertainty.png");
+//        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
+//                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
+//                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
+//        //only for testing
+//        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY + "uncertainty.png");
         this.init();
 
         long i = 0;
@@ -56,6 +58,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
             this.localSearchProcedure(this.graph);
             i++;
             //System.out.println(i);
+            //only for checking robustness criterium
             if(i % AntColouringConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
                 this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             }
@@ -65,7 +68,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         long endTime = System.nanoTime();
 
         this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
-        getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
 
         System.out.println("Koniec");
         return this.verticesColourMap;
@@ -266,18 +269,6 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         ant.setCurrentVertex(nextVertex);
     }
 
-    private Integer randomlySelectColour() {
-        Random random = new Random();
-        Integer randomColour = -1;
-        randomColour = this.coloursMap
-                .keySet()
-                .stream()
-                .skip(random.nextInt(coloursMap.size() - 1) + 1)
-                .findFirst()
-                .orElse(null);
-        return randomColour;
-    }
-
     private void imposeColouringAndUpdatePheromone(String randomVertex, Integer randomColour) {
         Integer oldColour = this.verticesColourMap.get(randomVertex);
         this.verticesColourMap.replace(randomVertex, randomColour);
@@ -295,7 +286,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         if (this.coloursMap.size() > 1) {
             String randomVertex = this.customWeightedGraphHelper.getRandomVertexFromGraph(graph);//get random vertex from graph
             //randomly select colour
-            Integer randomColour = this.randomlySelectColour();
+            Integer randomColour = this.randomlySelectColour(this.coloursMap);
             Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList = customWeightedGraphHelper.
                     getNeighbourhoodListOfVertex(this.graph, randomVertex);
             boolean isRandomColourValid = checkIfColourIsValid(randomVertexNeighbourhoodList,this.verticesColourMap, randomColour);
