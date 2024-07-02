@@ -3,10 +3,10 @@ package pl.polsl;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
-import pl.polsl.metaheuristics.AntColouringHeuristic;
-import pl.polsl.metaheuristics.BeeColouringHeuristic;
-import pl.polsl.metaheuristics.CuckooSearchHeuristic;
-import pl.polsl.metaheuristics.StorkFeedingHeuristic;
+import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
+import pl.polsl.view.GraphColouringView;
+
+import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -24,7 +24,7 @@ public class Main {
         //customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel3.col");
 //        final var dimacsDataset = customWeightedGraph.importDIMACSBenchmarkDatasetAsUndirected("D:\\GraphColouring\\instances");
 //        System.out.println(dimacsDataset.size());
-        DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\anna.col");
+        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\anna.col");
         graph = customWeightedGraphHelper.imposeUncertaintyToGraph(graph,
                 GraphConstants.PROPORTION_EDGES_TO_FUZZ,
                 GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);//Losowy wybór krawędzi które będą miały zmienione losowo wagi
@@ -34,32 +34,48 @@ public class Main {
         System.out.println("Graph vertices set number: " + graph.vertexSet().size());
         System.out.println("Graph edges set number: " + graph.edgeSet().size());
         //============================================Mrówkowa heurysytka===============================================//
-        AntColouringHeuristic antColouringHeuristic = new AntColouringHeuristic(graph);
-        var graphColouring = antColouringHeuristic.colourTheGraph();
-        for(String vertex : graphColouring.keySet()) {
-            System.out.println(vertex + " kolor: " + graphColouring.get(vertex));
-        }
+//        AntColouringHeuristic antColouringHeuristic = new AntColouringHeuristic(graph);
+//        var graphColouring = antColouringHeuristic.colourTheGraph();
+//        for(String vertex : graphColouring.keySet()) {
+//            System.out.println(vertex + " kolor: " + graphColouring.get(vertex));
+//        }
         //============================================Kukułcza heurysytka===============================================//
-        CuckooSearchHeuristic cuckooSearchHeuristic = new CuckooSearchHeuristic(graph);
-        var cuckooColouring = cuckooSearchHeuristic.colourTheGraph();
-        for(String vertex : cuckooColouring.keySet()) {
-            System.out.println(vertex + " kolor: " + cuckooColouring.get(vertex));
-        }
+//        CuckooSearchHeuristic cuckooSearchHeuristic = new CuckooSearchHeuristic(graph);
+//        var cuckooColouring = cuckooSearchHeuristic.colourTheGraph();
+//        for(String vertex : cuckooColouring.keySet()) {
+//            System.out.println(vertex + " kolor: " + cuckooColouring.get(vertex));
+//        }
         //============================================Pszczela heurysytka===============================================//
-        BeeColouringHeuristic beeColouringHeuristic = new BeeColouringHeuristic(graph);
-        var beesColouring = beeColouringHeuristic.colourTheGraph();
-        for(String vertex : beesColouring.keySet()) {
-            System.out.println(vertex + " kolor: " + beesColouring.get(vertex));
-        }
+//        BeeColouringHeuristic beeColouringHeuristic = new BeeColouringHeuristic(graph);
+//        var beesColouring = beeColouringHeuristic.colourTheGraph();
+//        for(String vertex : beesColouring.keySet()) {
+//            System.out.println(vertex + " kolor: " + beesColouring.get(vertex));
+//        }
         //============================================Bociania heurysytka===============================================//
-        StorkFeedingHeuristic storkFeedingHeuristic = new StorkFeedingHeuristic(graph);
-        var storkColouring = storkFeedingHeuristic.colourTheGraph();
-        for(String vertex : storkColouring.keySet()) {
-            System.out.println(vertex + " kolor: " + storkColouring.get(vertex));
-        }
-        var graphVizu = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel4.col");
-        customWeightedGraphHelper.savingGraphVisualizationToFile(graphVizu, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"prezka0.png");
-        graphVizu = customWeightedGraphHelper.imposeUncertaintyToGraph(graphVizu, GraphConstants.PROPORTION_EDGES_TO_FUZZ, GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
-        customWeightedGraphHelper.savingGraphVisualizationToFile(graphVizu, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"prezka1.png");
+//        StorkFeedingHeuristic storkFeedingHeuristic = new StorkFeedingHeuristic(graph);
+//        var storkColouring = storkFeedingHeuristic.colourTheGraph();
+//        for(String vertex : storkColouring.keySet()) {
+//            System.out.println(vertex + " kolor: " + storkColouring.get(vertex));
+//        }
+//        var graphVizu = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted("D:\\GraphColouring\\instances\\myciel4.col");
+//        customWeightedGraphHelper.savingGraphVisualizationToFile(graphVizu, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"prezka0.png");
+//        graphVizu = customWeightedGraphHelper.imposeUncertaintyToGraph(graphVizu, GraphConstants.PROPORTION_EDGES_TO_FUZZ, GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
+//        customWeightedGraphHelper.savingGraphVisualizationToFile(graphVizu, GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"prezka1.png");
+
+        EventQueue.invokeLater(new Runnable() {
+            DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
+
+            @Override
+            public void run() {
+                GraphColouringView view = new GraphColouringView();
+                view.getGraphPanel().showGraph(graph);
+                //view.showGraph(graph);
+            }
+
+            public Runnable init(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
+                this.graph=graph;
+                return(this);
+            }
+        }.init(graph));
     }
 }

@@ -281,6 +281,21 @@ public class CustomWeightedGraphHelper {
         } catch (IOException error) {}
     }
 
+    public mxGraphComponent showingGraphInView(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
+        JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
+
+        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
+        //usuwanie strzałek z wizualizacji
+        mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
+        mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
+        Collection<Object> cells =  graphModel.getCells().values();
+        mxUtils.setCellStyles(graphComponent.getGraph().getModel(), cells.toArray(), mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+
+        mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
+        layout.execute(graphAdapter.getDefaultParent());
+        return graphComponent;
+    }
+
     private static <V, Vv, E> DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> convert(Graph<V, E> source) {
         DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> result = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
         //source.vertexSet().forEach(v -> result.addVertex(vertexMapper.apply(v)));
