@@ -21,7 +21,7 @@ public class BeeColouringPanel extends JPanel {
     private JFormattedTextField workerOperationsText = new JFormattedTextField();
     private JLabel scoutOperationsLabel = new JLabel("Number of scouts' operations:");
     private JFormattedTextField scoutOperationsText = new JFormattedTextField();
-    private JLabel hiveShuffleLabel = new JLabel("Number of scouts' operations:");
+    private JLabel hiveShuffleLabel = new JLabel("Hive shuffle iteration period:");
     private JFormattedTextField hiveShuffleText = new JFormattedTextField();
     private JLabel resultsLabel = new JLabel("Results:");
     private JLabel timeLabel = new JLabel("Execution time:");

@@ -24,11 +24,11 @@ public class AntColouringPanel extends JPanel {
 
     public AntColouringPanel() {
         setLayout(new GridLayout(14,1));
-        this.runButton.setPreferredSize(new Dimension(100,50));
-        this.agentsNumberText.setText(String.valueOf(AntColouringConstants.NUMBER_OF_AGENTS));
-        this.iterationsText.setText(String.valueOf(AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS));
-        this.coloursNumText.setText(String.valueOf(AntColouringConstants.MINIMAL_ROBUST_COLOUR_NUMBER));
-        this.pheromoneEvaporationText.setText(String.valueOf(AntColouringConstants.PHEROMONE_EVAPORATION_WEIGHT));
+//        this.runButton.setPreferredSize(new Dimension(100,50));
+        this.agentsNumberText.setValue(AntColouringConstants.NUMBER_OF_AGENTS);
+        this.iterationsText.setValue(AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS);
+        this.coloursNumText.setValue(AntColouringConstants.MINIMAL_ROBUST_COLOUR_NUMBER);
+        this.pheromoneEvaporationText.setValue(AntColouringConstants.PHEROMONE_EVAPORATION_WEIGHT);
         add(this.agentsNumberLabel);
         add(this.agentsNumberText);
         add(this.iterationsLabel);

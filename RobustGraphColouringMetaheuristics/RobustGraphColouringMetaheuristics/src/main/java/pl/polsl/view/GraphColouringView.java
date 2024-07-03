@@ -46,10 +46,10 @@ public class GraphColouringView extends JFrame{
         this.beesPanel = new BeeColouringPanel();
         this.storkPanel = new StorkFeedingPanel();
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("ACO", antPanel);
-        tabbedPane.addTab("CS", cuckooPanel);
-        tabbedPane.addTab("ABC", beesPanel);
-        tabbedPane.addTab("SFO", storkPanel);
+        tabbedPane.addTab("ACO", null, antPanel, "Run Ant Colony Optimisation");
+        tabbedPane.addTab("CS", null, cuckooPanel, "Run Cuckoo Search");
+        tabbedPane.addTab("ABC", null, beesPanel, "Run Artificial Bee Colony");
+        tabbedPane.addTab("SFO", null, storkPanel, "Run Stork Feeding Optimisation");
         graphPanel.setPreferredSize(new Dimension(9000, 800));
         graphPanel.addKeyListener(graphPanel);
         graphPanel.setFocusable(true);
