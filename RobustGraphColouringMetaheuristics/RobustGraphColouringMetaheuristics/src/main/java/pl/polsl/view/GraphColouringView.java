@@ -6,10 +6,12 @@ import pl.polsl.view.panels.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 @Getter
 @Setter
-public class GraphColouringView extends JFrame{
+public class GraphColouringView extends JFrame implements KeyListener {
 
     private GraphPanel graphPanel;
     private AntColouringPanel antPanel;
@@ -23,6 +25,22 @@ public class GraphColouringView extends JFrame{
 //        graphComponent.
 //
 //    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyPressed(KeyEvent e) {}
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        char c = e.getKeyChar();
+        if(c == 'z') {
+            this.graphPanel.zoomInGraph();
+        } else if(c == 'o') {
+            this.graphPanel.zoomOutGraph();
+        }
+    }
 
     public GraphColouringView() {
         super();
@@ -51,8 +69,8 @@ public class GraphColouringView extends JFrame{
         tabbedPane.addTab("ABC", null, beesPanel, "Run Artificial Bee Colony");
         tabbedPane.addTab("SFO", null, storkPanel, "Run Stork Feeding Optimisation");
         graphPanel.setPreferredSize(new Dimension(9000, 800));
-        graphPanel.addKeyListener(graphPanel);
-        graphPanel.setFocusable(true);
+//        graphPanel.addKeyListener(graphPanel);
+//        graphPanel.setFocusable(true);
         tabbedPane.setPreferredSize(new Dimension(300, 800));
 //        GridBagConstraints graphConstraints = new GridBagConstraints();
 //        graphConstraints.gridwidth = 800;
@@ -60,6 +78,8 @@ public class GraphColouringView extends JFrame{
 //        algorithmsPaneConstraints.gridwidth = 400;
         boxes[0].add(graphPanel);
         boxes[1].add(tabbedPane);
+        this.addKeyListener(this);
+        this.setFocusable(true);
         setVisible(true);
     }
 }
