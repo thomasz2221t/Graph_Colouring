@@ -2,6 +2,7 @@ package pl.polsl;
 
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.constants.GraphConstants;
+import pl.polsl.controller.GraphColouringController;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 import pl.polsl.view.GraphColouringView;
@@ -67,8 +68,9 @@ public class Main {
 
             @Override
             public void run() {
-                GraphColouringView view = new GraphColouringView();
-                view.getGraphPanel().showGraph(graph);
+                GraphColouringController controller = new GraphColouringController(this.graph);
+                GraphColouringView view = new GraphColouringView(controller);
+                view.getGraphPanel().showGraph(this.graph);
                 //view.showGraph(graph);
             }
 

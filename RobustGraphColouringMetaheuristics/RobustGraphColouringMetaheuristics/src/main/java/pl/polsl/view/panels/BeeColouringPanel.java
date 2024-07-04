@@ -1,12 +1,18 @@
 package pl.polsl.view.panels;
 
 import pl.polsl.constants.BeeColouringConstants;
+import pl.polsl.controller.GraphColouringController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Map;
 
-public class BeeColouringPanel extends JPanel {
+public class BeeColouringPanel extends JPanel implements ActionListener {
 
+    private GraphColouringController controller;
+    private GraphPanel graphPanel;
     private JLabel workersNumberLabel = new JLabel("Number of bees workers:");
     private JFormattedTextField workersNumberText = new JFormattedTextField();
     private JLabel scoutsNumberLabel = new JLabel("Number of bees scouts:");
@@ -30,8 +36,19 @@ public class BeeColouringPanel extends JPanel {
     private JLabel validLabel = new JLabel("Colouring is valid:");
     private JButton runButton = new JButton("Run algorithm");
 
-    public BeeColouringPanel() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println("Przycisk pszczoły");
+        Map<String, Integer> colouring = this.controller.runBeeColouring();
+        this.graphPanel.showColouredGraph(this.controller.graph, colouring);
+        this.graphPanel.requestFocus();
+    }
+
+    public BeeColouringPanel(GraphColouringController controller, GraphPanel graphPanel) {
+        this.controller = controller;
+        this.graphPanel = graphPanel;
         setLayout(new GridLayout(22,1));
+        runButton.addActionListener(this);
         this.workersNumberText.setValue(BeeColouringConstants.NUMBER_OF_BEE_WORKERS);
         this.scoutsNumberText.setValue(BeeColouringConstants.NUMBER_OF_BEE_SCOUTS);
         this.iterationsText.setValue(BeeColouringConstants.BEE_COLOURING_MAX_ITERATIONS);

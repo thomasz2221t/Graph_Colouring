@@ -2,17 +2,19 @@ package pl.polsl.view;
 
 import lombok.Getter;
 import lombok.Setter;
+import pl.polsl.controller.GraphColouringController;
 import pl.polsl.view.panels.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 @Getter
 @Setter
-public class GraphColouringView extends JFrame implements KeyListener {
+public class GraphColouringView extends JFrame implements ActionListener {
 
+    private GraphColouringController controller;
     private GraphPanel graphPanel;
     private AntColouringPanel antPanel;
     private CuckooSearchPanel cuckooPanel;
@@ -27,23 +29,29 @@ public class GraphColouringView extends JFrame implements KeyListener {
 //    }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
-
-    @Override
-    public void keyPressed(KeyEvent e) {}
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        char c = e.getKeyChar();
-        if(c == 'z') {
-            this.graphPanel.zoomInGraph();
-        } else if(c == 'o') {
-            this.graphPanel.zoomOutGraph();
-        }
+    public void actionPerformed(ActionEvent e) {
+//        System.out.println("Tylko panel");
     }
 
-    public GraphColouringView() {
+//    @Override
+//    public void keyTyped(KeyEvent e) {}
+//
+//    @Override
+//    public void keyPressed(KeyEvent e) {}
+//
+//    @Override
+//    public void keyReleased(KeyEvent e) {
+//        char c = e.getKeyChar();
+//        if(c == 'z') {
+//            this.graphPanel.zoomInGraph();
+//        } else if(c == 'x') {
+//            this.graphPanel.zoomOutGraph();
+//        }
+//    }
+
+    public GraphColouringView(GraphColouringController controller) {
         super();
+        this.controller = controller;
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BoxLayout layout = new BoxLayout(getContentPane(), BoxLayout.X_AXIS);
@@ -59,16 +67,17 @@ public class GraphColouringView extends JFrame implements KeyListener {
         add(boxes[1]);
 
         this.graphPanel = new GraphPanel();
-        this.antPanel = new AntColouringPanel();
-        this.cuckooPanel = new CuckooSearchPanel();
-        this.beesPanel = new BeeColouringPanel();
-        this.storkPanel = new StorkFeedingPanel();
+        this.antPanel = new AntColouringPanel(controller, this.graphPanel);
+        this.cuckooPanel = new CuckooSearchPanel(controller, this.graphPanel);
+        this.beesPanel = new BeeColouringPanel(controller, this.graphPanel);
+        this.storkPanel = new StorkFeedingPanel(controller, this.graphPanel);
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("ACO", null, antPanel, "Run Ant Colony Optimisation");
-        tabbedPane.addTab("CS", null, cuckooPanel, "Run Cuckoo Search");
-        tabbedPane.addTab("ABC", null, beesPanel, "Run Artificial Bee Colony");
-        tabbedPane.addTab("SFO", null, storkPanel, "Run Stork Feeding Optimisation");
-        graphPanel.setPreferredSize(new Dimension(9000, 800));
+        tabbedPane.addTab("ACO", null, this.antPanel, "Run Ant Colony Optimisation");
+        tabbedPane.addTab("CS", null, this.cuckooPanel, "Run Cuckoo Search");
+        tabbedPane.addTab("ABC", null, this.beesPanel, "Run Artificial Bee Colony");
+        tabbedPane.addTab("SFO", null, this.storkPanel, "Run Stork Feeding Optimisation");
+        this.graphPanel.setPreferredSize(new Dimension(9000, 800));
+        this.graphPanel.requestFocus();
 //        graphPanel.addKeyListener(graphPanel);
 //        graphPanel.setFocusable(true);
         tabbedPane.setPreferredSize(new Dimension(300, 800));
@@ -76,10 +85,18 @@ public class GraphColouringView extends JFrame implements KeyListener {
 //        graphConstraints.gridwidth = 800;
 //        GridBagConstraints algorithmsPaneConstraints = new GridBagConstraints();
 //        algorithmsPaneConstraints.gridwidth = 400;
-        boxes[0].add(graphPanel);
+        boxes[0].add(this.graphPanel);
         boxes[1].add(tabbedPane);
-        this.addKeyListener(this);
-        this.setFocusable(true);
+//        this.addKeyListener(this);
+//        this.setFocusable(true);
+//        antPanel.addKeyListener(antPanel);
+//        antPanel.setFocusable(true);
+//        cuckooPanel.addKeyListener(cuckooPanel);
+//        cuckooPanel.setFocusable(true);
+//        beesPanel.addKeyListener(beesPanel);
+//        beesPanel.setFocusable(true);
+//        storkPanel.addKeyListener(storkPanel);
+//        storkPanel.setFocusable(true);
         setVisible(true);
     }
 }

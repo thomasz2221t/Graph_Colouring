@@ -1,12 +1,18 @@
 package pl.polsl.view.panels;
 
 import pl.polsl.constants.StorkFeedingConstants;
+import pl.polsl.controller.GraphColouringController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Map;
 
-public class StorkFeedingPanel extends JPanel {
+public class StorkFeedingPanel extends JPanel implements ActionListener {
 
+    private GraphColouringController controller;
+    private GraphPanel graphPanel;
     private JLabel agentsNumberLabel = new JLabel("Number of artificial storks:");
     private JFormattedTextField agentsNumberText = new JFormattedTextField();
     private JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
@@ -26,8 +32,19 @@ public class StorkFeedingPanel extends JPanel {
     private JLabel validLabel = new JLabel("Colouring is valid:");
     private JButton runButton = new JButton("Run algorithm");
 
-    public StorkFeedingPanel() {
-        setLayout(new GridLayout(18,1));
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println("Przycisk bociany");
+        Map<String, Integer> colouring = this.controller.runStorkFeedingColouring();
+        this.graphPanel.showColouredGraph(this.controller.graph, colouring);
+        this.graphPanel.requestFocus();
+    }
+
+    public StorkFeedingPanel(GraphColouringController controller, GraphPanel graphPanel) {
+        this.controller = controller;
+        this.graphPanel = graphPanel;
+        setLayout(new GridLayout(22,1));
+        this.runButton.addActionListener(this);
         this.agentsNumberText.setValue(StorkFeedingConstants.NUMBER_OF_AGENTS);
         this.iterationsText.setValue(StorkFeedingConstants.STORK_FEEDING_MAX_ITERATIONS);
         this.coloursNumText.setValue(StorkFeedingConstants.MAXIMAL_ROBUST_COLOUR_NUMBER);

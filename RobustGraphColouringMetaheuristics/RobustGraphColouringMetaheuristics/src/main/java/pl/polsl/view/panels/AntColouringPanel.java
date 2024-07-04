@@ -1,12 +1,18 @@
 package pl.polsl.view.panels;
 
 import pl.polsl.constants.AntColouringConstants;
+import pl.polsl.controller.GraphColouringController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Map;
 
-public class AntColouringPanel extends JPanel {
+public class AntColouringPanel extends JPanel implements ActionListener {
 
+    private GraphColouringController controller;
+    private GraphPanel graphPanel;
     private JLabel agentsNumberLabel = new JLabel("Number of artificial ants:");
     private JFormattedTextField agentsNumberText = new JFormattedTextField();
     private JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
@@ -22,8 +28,19 @@ public class AntColouringPanel extends JPanel {
     private JLabel validLabel = new JLabel("Colouring is valid:");
     private JButton runButton = new JButton("Run algorithm");
 
-    public AntColouringPanel() {
-        setLayout(new GridLayout(14,1));
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println("Przycisk mrówki");
+        Map<String, Integer> colouring = this.controller.runAntColouring();
+        this.graphPanel.showColouredGraph(this.controller.graph, colouring);
+        this.graphPanel.requestFocus();
+    }
+
+    public AntColouringPanel(GraphColouringController controller, GraphPanel graphPanel) {
+        this.controller = controller;
+        this.graphPanel = graphPanel;
+        setLayout(new GridLayout(22,1));
+        runButton.addActionListener(this);
 //        this.runButton.setPreferredSize(new Dimension(100,50));
         this.agentsNumberText.setValue(AntColouringConstants.NUMBER_OF_AGENTS);
         this.iterationsText.setValue(AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS);

@@ -296,6 +296,39 @@ public class CustomWeightedGraphHelper {
         return graphComponent;
     }
 
+    public mxGraphComponent showingColouredGraphInView(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {
+        JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
+        Random random = new Random();
+        Map<Integer, String> colourCodingMap = new HashMap<>();
+        for (String vertex : verticesColourMap.keySet()) {
+            if(!colourCodingMap.containsKey(verticesColourMap.get(vertex))) {
+                float r = random.nextFloat();
+                float g = random.nextFloat();
+                float b = random.nextFloat();
+                Color randomColor = new Color(r, g, b);
+                colourCodingMap.put(verticesColourMap.get(vertex),
+                        "#"+Integer.toHexString(randomColor.getRGB()).substring(2)
+                );
+            }
+        }
+
+        for (String vertex : verticesColourMap.keySet()) {
+            Object vertexCell = graphAdapter.getVertexToCellMap().get(vertex);
+            graphAdapter.setCellStyles(mxConstants.STYLE_FILLCOLOR, colourCodingMap.get(verticesColourMap.get(vertex)), new Object[]{vertexCell});
+        }
+
+        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
+        //usuwanie strzałek z wizualizacji
+        mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
+        mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
+        Collection<Object> cells =  graphModel.getCells().values();
+        mxUtils.setCellStyles(graphComponent.getGraph().getModel(), cells.toArray(), mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+
+        mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
+        layout.execute(graphAdapter.getDefaultParent());
+        return graphComponent;
+    }
+
     private static <V, Vv, E> DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> convert(Graph<V, E> source) {
         DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> result = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
         //source.vertexSet().forEach(v -> result.addVertex(vertexMapper.apply(v)));
