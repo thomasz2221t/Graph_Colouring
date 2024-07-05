@@ -1,5 +1,6 @@
 package pl.polsl.metaheuristics;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.agents.bees.BeeAgent;
 import pl.polsl.agents.bees.BeesHive;
@@ -16,36 +17,41 @@ import java.util.*;
 public class BeeColouringHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
     public Map<String, Integer> verticesColourMap = new HashMap<>();//the observator
+    public Double robustness = 100.0;
+    public long systemTime;
+    public long cpuTime;
+    public boolean colouringValid;
     private Map<Integer, Integer> coloursMap = new HashMap<>();
     private List<BeesHive> beesHives = new ArrayList<>();
     private List<BeeAgent> bees = new ArrayList<>();
-    private Double robustness = 100.0;
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 
-    public Map<String, Integer> colourTheGraph() {
-
+    public Map<String, Integer> colourTheGraph(final int numberOfBeeWorkers, final int numberOfBeeScouts, final long beeColouringMaxIterations,
+                                               final int maximalRobustColourNumber, final int feedingRegionDepth, final int workerOperationalIterationNumber,
+                                               final int scoutOperationalIterationNumber, final int hivesShuffleIterationPeriod) {
 //        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
 //                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
 //                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
 //        //only for testing
 //        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
 //                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"bees.png");
-
-        this.init();
+        this.resetVariables();
+        this.init(numberOfBeeWorkers, numberOfBeeScouts, maximalRobustColourNumber, feedingRegionDepth);
         long i = 0;
 
         ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
         long startTime = System.nanoTime();
         long cpuStartTime = threadMxBean.getCurrentThreadCpuTime();
 
-        while(i < BeeColouringConstants.BEE_COLOURING_MAX_ITERATIONS) {
+        while(i < beeColouringMaxIterations) {
 
-            for(int k = 0; k < BeeColouringConstants.NUMBER_OF_AGENTS; k++) {
+            for(int k = 0; k < (numberOfBeeWorkers + numberOfBeeScouts); k++) {
                 BeeAgent bee = this.bees.get(k);
-                this.performBeeSearch(this.graph, this.verticesColourMap, this.coloursMap, this.beesHives, bee);
+                this.performBeeSearch(this.graph, this.verticesColourMap, this.coloursMap, this.beesHives, bee,
+                        workerOperationalIterationNumber, scoutOperationalIterationNumber);
             }
-            if(i % BeeColouringConstants.HIVES_SHUFFLE_ITERATION_PERIOD == 0) {
-                this.shuffleBeesAndHives(this.graph, this.bees, this.beesHives);
+            if(i % hivesShuffleIterationPeriod == 0) {
+                this.shuffleBeesAndHives(this.graph, this.bees, this.beesHives, feedingRegionDepth);
             }
             i++;
             //only for checking robustness criterium
@@ -59,24 +65,27 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
 
         this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
         this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
-
+        Triple<Long, Long, Boolean> statistics = this.estimateMetaheuristicsStatistics(this.graph, this.verticesColourMap, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.systemTime = statistics.getLeft();
+        this.cpuTime = statistics.getMiddle();
+        this.colouringValid = statistics.getRight();
         return this.verticesColourMap;
     }
 
-    private void init() {
+    private void init(int numberOfBeeWorkers, int numberOfBeeScouts, int maximalRobustColourNumber, int feedingRegionDepth) {
         this.initVerticesColourMap(this.graph, this.verticesColourMap);
-        this.initColourList(this.coloursMap, this.graph.vertexSet().size(), BeeColouringConstants.MAXIMAL_ROBUST_COLOUR_NUMBER);
+        this.initColourList(this.coloursMap, this.graph.vertexSet().size(), maximalRobustColourNumber);
         //init Hives and Bees
-        this.initHives(this.graph, this.beesHives);
-        this.initBees(this.bees, this.beesHives);
+        this.initHives(this.graph, this.beesHives, numberOfBeeWorkers + numberOfBeeScouts, feedingRegionDepth);
+        this.initBees(this.bees, this.beesHives, numberOfBeeWorkers, numberOfBeeScouts);
     }
 
     //Iteracyjny Algorytm przeszukiwania w głąb, ale sąsiedztwa a nie pojedynczych sciezek
-    private Map<String, Integer> determineFeedingRegionInformation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String beginVertex) {
+    private Map<String, Integer> determineFeedingRegionInformation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String beginVertex, int feedingRegionDepth) {
         List<String> verticesToVisit = new ArrayList<>();
         Map<String, Integer> feedingRegion = new HashMap<>();
         verticesToVisit.add(beginVertex);
-        for(int i = 0; i < BeeColouringConstants.FEEDING_REGION_DEPTH; i++) {
+        for(int i = 0; i < feedingRegionDepth; i++) {
             int k = 0;
             while(k < verticesToVisit.size()) {
                 Map<String, CustomWeightedEdge> neighbourhoodMap =
@@ -94,19 +103,19 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         return feedingRegion;
     }
 
-    private List<BeesHive> initHives(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<BeesHive> hives) {
-        for(int i = 0; i < BeeColouringConstants.NUMBER_OF_AGENTS; i++) {
+    private List<BeesHive> initHives(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<BeesHive> hives, int numberOfAgents, int feedingRegionDepth) {
+        for(int i = 0; i < numberOfAgents; i++) {
             String randomVertex = this.customWeightedGraphHelper.getRandomVertexFromGraph(graph);
-            Map<String, Integer> feedingRegion = this.determineFeedingRegionInformation(graph, randomVertex);
+            Map<String, Integer> feedingRegion = this.determineFeedingRegionInformation(graph, randomVertex, feedingRegionDepth);
             BeesHive beesHive = new BeesHive(randomVertex, feedingRegion);
             hives.add(beesHive);
         }
         return hives;
     }
 
-    private List<BeeAgent> initBees(List<BeeAgent> bees, List<BeesHive> hives) {
-        int scoutingVacancies = BeeColouringConstants.NUMBER_OF_BEE_SCOUTS;
-        int workingVacancies = BeeColouringConstants.NUMBER_OF_BEE_WORKERS;
+    private List<BeeAgent> initBees(List<BeeAgent> bees, List<BeesHive> hives, int numberOfBeeWorkers, int numberOfBeeScouts) {
+        int scoutingVacancies = numberOfBeeScouts;
+        int workingVacancies = numberOfBeeWorkers;
         int hiveIndex = 0;
         while(scoutingVacancies + workingVacancies > 0) {
             BeesHive hive = hives.get(hiveIndex);
@@ -208,11 +217,14 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         hive.updateFeedingRegionInformation(bee.getFeedingRegionInformation());
     }
 
-    private void performBeeSearch(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, List<BeesHive> hives, BeeAgent bee) {
+    private void performBeeSearch(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph,
+                                  Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap,
+                                  List<BeesHive> hives, BeeAgent bee, int workerOperationalIterationNumber,
+                                  int scoutOperationalIterationNumber) {
         //dla kazdej mozliwosci ruchu
         int beeOperationalTime = bee.getType() == BeeAgentType.SCOUT
-                ? BeeColouringConstants.SCOUT_OPERATIONAL_ITERATION_NUMBER
-                : BeeColouringConstants.WORKER_OPERATIONAL_ITERATION_NUMBER;
+                ? scoutOperationalIterationNumber
+                : workerOperationalIterationNumber;
         try {
             BeesHive hive = this.getHive(bee, hives);
             for(int i = 0; i < beeOperationalTime; i++) {
@@ -261,15 +273,26 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         }
     }
 
-    private void shuffleBeesAndHives(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<BeeAgent> bees, List<BeesHive> hives) {
+    private void shuffleBeesAndHives(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<BeeAgent> bees, List<BeesHive> hives, int feedingRegionDepth) {
         for (BeeAgent bee : bees) {
             Map<String, Integer> feedingRegionInformation = bee.getFeedingRegionInformation();
             //get uncoloured vertex from neighbourhood or get random vertex
             String hiveRelocationVertex = this.getHiveRelocationVertex(graph, feedingRegionInformation);
             //get new feeding region without colouring on vertex
-            Map<String, Integer> feedingRegion = this.determineFeedingRegionInformation(graph, hiveRelocationVertex);
+            Map<String, Integer> feedingRegion = this.determineFeedingRegionInformation(graph, hiveRelocationVertex, feedingRegionDepth);
             this.relocateHiveAndBee(hives, bee, feedingRegionInformation, hiveRelocationVertex, feedingRegion);
         }
+    }
+
+    public void resetVariables() {
+        this.verticesColourMap = new HashMap<>();
+        this.robustness = 100.0;
+        this.systemTime = 0;
+        this.cpuTime = 0;
+        this.colouringValid = false;
+        this.coloursMap = new HashMap<>();
+        this.beesHives = new ArrayList<>();
+        this.bees = new ArrayList<>();
     }
 
     public BeeColouringHeuristic(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {

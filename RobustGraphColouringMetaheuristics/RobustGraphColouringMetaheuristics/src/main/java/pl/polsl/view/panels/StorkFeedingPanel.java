@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.util.Map;
 
 public class StorkFeedingPanel extends JPanel implements ActionListener {
@@ -35,7 +36,15 @@ public class StorkFeedingPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         System.out.println("Przycisk bociany");
-        Map<String, Integer> colouring = this.controller.runStorkFeedingColouring();
+        Map<String, Integer> colouring = this.controller.runStorkFeedingColouring((Integer) this.agentsNumberText.getValue(),
+                (Long) this.iterationsText.getValue(), (Integer) this.coloursNumText.getValue(),
+                (Double) this.goodFitnessText.getValue(), (Double) this.moderateFitnessText.getValue(),
+                (Integer) this.gaussianAnimalSightDeviationText.getValue());
+        DecimalFormat df = new DecimalFormat("#.####");
+        this.timeLabel.setText("Execution time: " + df.format(this.controller.getStorkFeedingHeuristic().systemTime / Math.pow(10,9)) + "[s]");
+        this.cpuTimeLabel.setText("CPU execution time: " + df.format(this.controller.getStorkFeedingHeuristic().cpuTime / Math.pow(10,9)) + "[s]");
+        this.robustnessLabel.setText("Robustness: " + df.format(this.controller.getStorkFeedingHeuristic().robustness));
+        this.validLabel.setText(this.controller.getStorkFeedingHeuristic().colouringValid ? "Colouring is valid" : "Colouring is invalid");
         this.graphPanel.showColouredGraph(this.controller.graph, colouring);
         this.graphPanel.requestFocus();
     }

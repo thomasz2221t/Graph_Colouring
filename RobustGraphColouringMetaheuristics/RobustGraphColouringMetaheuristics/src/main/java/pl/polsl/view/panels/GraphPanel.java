@@ -20,7 +20,10 @@ public class GraphPanel extends JPanel implements KeyListener {
         this.graphVisu = graphHelper.showingGraphInView(graph);
         //mxIGraphLayout layout = new mxHierarchicalLayout(graph);
         this.setLayout(new BorderLayout());
+        this.setVisible(false);
+        this.removeAll();
         this.add(this.graphVisu);
+        this.setVisible(true);
     }
 
     public void showColouredGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {

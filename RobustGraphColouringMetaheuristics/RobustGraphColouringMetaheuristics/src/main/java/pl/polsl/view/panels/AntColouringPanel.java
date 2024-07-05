@@ -7,31 +7,37 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.util.Map;
 
 public class AntColouringPanel extends JPanel implements ActionListener {
 
-    private GraphColouringController controller;
-    private GraphPanel graphPanel;
-    private JLabel agentsNumberLabel = new JLabel("Number of artificial ants:");
-    private JFormattedTextField agentsNumberText = new JFormattedTextField();
-    private JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
-    private JFormattedTextField iterationsText = new JFormattedTextField();
-    private JLabel coloursNumLabel = new JLabel("Number of colours:");
-    private JFormattedTextField coloursNumText = new JFormattedTextField();
-    private JLabel pheromoneEvaporationLabel = new JLabel("Pheromone evaporation factor:");
-    private JFormattedTextField pheromoneEvaporationText = new JFormattedTextField();
-    private JLabel resultsLabel = new JLabel("Results:");
-    private JLabel timeLabel = new JLabel("Execution time:");
-    private JLabel cpuTimeLabel = new JLabel("CPU execution time:");
-    private JLabel robustnessLabel = new JLabel("Robustness:");
-    private JLabel validLabel = new JLabel("Colouring is valid:");
-    private JButton runButton = new JButton("Run algorithm");
+    private final GraphColouringController controller;
+    private final GraphPanel graphPanel;
+    private final JLabel agentsNumberLabel = new JLabel("Number of artificial ants:");
+    private final JFormattedTextField agentsNumberText = new JFormattedTextField();
+    private final JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
+    private final JFormattedTextField iterationsText = new JFormattedTextField();
+    private final JLabel coloursNumLabel = new JLabel("Number of colours:");
+    private final JFormattedTextField coloursNumText = new JFormattedTextField();
+    private final JLabel pheromoneEvaporationLabel = new JLabel("Pheromone evaporation factor:");
+    private final JFormattedTextField pheromoneEvaporationText = new JFormattedTextField();
+    private final JLabel resultsLabel = new JLabel("Results:");
+    private final JLabel timeLabel = new JLabel("Execution time:");
+    private final JLabel cpuTimeLabel = new JLabel("CPU execution time:");
+    private final JLabel robustnessLabel = new JLabel("Robustness:");
+    private final JLabel validLabel = new JLabel("Colouring is valid:");
+    private final JButton runButton = new JButton("Run algorithm");
 
     @Override
     public void actionPerformed(ActionEvent e) {
         System.out.println("Przycisk mrówki");
-        Map<String, Integer> colouring = this.controller.runAntColouring();
+        Map<String, Integer> colouring = this.controller.runAntColouring((Integer) this.agentsNumberText.getValue(), (Long) this.iterationsText.getValue(), (Integer) this.coloursNumText.getValue(), (Double) this.pheromoneEvaporationText.getValue());
+        DecimalFormat df = new DecimalFormat("#.####");
+        this.timeLabel.setText("Execution time: " + df.format(this.controller.getAntColouringHeuristic().systemTime / Math.pow(10,9)) + "[s]");
+        this.cpuTimeLabel.setText("CPU execution time: " + df.format(this.controller.getAntColouringHeuristic().cpuTime / Math.pow(10,9)) + "[s]");
+        this.robustnessLabel.setText("Robustness: " + df.format(this.controller.getAntColouringHeuristic().robustness));
+        this.validLabel.setText(this.controller.getAntColouringHeuristic().colouringValid ? "Colouring is valid" : "Colouring is invalid");
         this.graphPanel.showColouredGraph(this.controller.graph, colouring);
         this.graphPanel.requestFocus();
     }

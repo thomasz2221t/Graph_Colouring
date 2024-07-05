@@ -1,5 +1,6 @@
 package pl.polsl.metaheuristics;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
@@ -106,5 +107,12 @@ public abstract class AbstractColouringHeuristic {
         System.out.println("CPU execution time: " + (cpuEndTime - cpuStartTime) + "[ns]");// nanoseconds
         System.out.println("Robustness: " + robustness);
         System.out.println("Is colouring valid among solid edges: " + this.checkGraphValidityAmongSolidEdges(graph, verticesColourMap));
+    }
+
+    protected Triple<Long, Long, Boolean> estimateMetaheuristicsStatistics(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, long startTime, long cpuStartTime, long cpuEndTime, long endTime) {
+        long systemTime = endTime - startTime;
+        long cpuTime = cpuEndTime - cpuStartTime;
+        boolean colouringValidity = this.checkGraphValidityAmongSolidEdges(graph, verticesColourMap);
+        return Triple.of(systemTime, cpuTime, colouringValidity);
     }
 }

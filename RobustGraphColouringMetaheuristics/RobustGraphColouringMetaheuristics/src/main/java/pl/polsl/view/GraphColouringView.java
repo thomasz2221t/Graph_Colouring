@@ -2,19 +2,26 @@ package pl.polsl.view;
 
 import lombok.Getter;
 import lombok.Setter;
+import pl.polsl.constants.GraphConstants;
 import pl.polsl.controller.GraphColouringController;
 import pl.polsl.view.panels.*;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.Objects;
 
 @Getter
 @Setter
 public class GraphColouringView extends JFrame implements ActionListener {
 
     private GraphColouringController controller;
+    private final JMenuBar appMenuBar;
+    private JMenu menu;
+    private JMenuItem pickGraphMenu;
     private GraphPanel graphPanel;
     private AntColouringPanel antPanel;
     private CuckooSearchPanel cuckooPanel;
@@ -30,7 +37,18 @@ public class GraphColouringView extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-//        System.out.println("Tylko panel");
+        System.out.println(e.getActionCommand());
+        if(Objects.equals(e.getActionCommand(), "Choose graph")) {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(".col Graph Files", "col");
+            chooser.setFileFilter(filter);
+            int returnVal = chooser.showOpenDialog(null);
+            if(returnVal == JFileChooser.APPROVE_OPTION) {
+                this.controller.importGraphFromPath(chooser.getSelectedFile().getAbsolutePath());
+                this.graphPanel.showGraph(this.controller.graph);
+            }
+        }
     }
 
 //    @Override
@@ -50,8 +68,15 @@ public class GraphColouringView extends JFrame implements ActionListener {
 //    }
 
     public GraphColouringView(GraphColouringController controller) {
-        super();
+        super("Robust Graph Colouring");
         this.controller = controller;
+        this.appMenuBar = new JMenuBar();
+        this.menu = new JMenu("Menu");
+        this.pickGraphMenu = new JMenuItem("Choose graph");
+        this.menu.add(this.pickGraphMenu);
+        this.appMenuBar.add(this.menu);
+        setJMenuBar(appMenuBar);
+        this.pickGraphMenu.addActionListener(this);
         setSize(1200, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         BoxLayout layout = new BoxLayout(getContentPane(), BoxLayout.X_AXIS);
