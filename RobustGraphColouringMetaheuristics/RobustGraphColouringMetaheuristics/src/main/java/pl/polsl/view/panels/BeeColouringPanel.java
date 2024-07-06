@@ -50,7 +50,7 @@ public class BeeColouringPanel extends JPanel implements ActionListener {
         this.cpuTimeLabel.setText("CPU execution time: " + df.format(this.controller.getBeeColouringHeuristic().cpuTime / Math.pow(10,9)) + "[s]");
         this.robustnessLabel.setText("Robustness: " + df.format(this.controller.getBeeColouringHeuristic().robustness));
         this.validLabel.setText(this.controller.getBeeColouringHeuristic().colouringValid ? "Colouring is valid" : "Colouring is invalid");
-        this.graphPanel.showColouredGraph(this.controller.graph, colouring);
+        this.graphPanel.showColouredGraph(this.controller.graph, colouring, true);
         this.graphPanel.requestFocus();
     }
 

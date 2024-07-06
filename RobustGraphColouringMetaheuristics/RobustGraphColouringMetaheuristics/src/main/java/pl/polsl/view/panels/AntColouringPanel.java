@@ -38,7 +38,7 @@ public class AntColouringPanel extends JPanel implements ActionListener {
         this.cpuTimeLabel.setText("CPU execution time: " + df.format(this.controller.getAntColouringHeuristic().cpuTime / Math.pow(10,9)) + "[s]");
         this.robustnessLabel.setText("Robustness: " + df.format(this.controller.getAntColouringHeuristic().robustness));
         this.validLabel.setText(this.controller.getAntColouringHeuristic().colouringValid ? "Colouring is valid" : "Colouring is invalid");
-        this.graphPanel.showColouredGraph(this.controller.graph, colouring);
+        this.graphPanel.showColouredGraph(this.controller.graph, colouring, true);
         this.graphPanel.requestFocus();
     }
 
