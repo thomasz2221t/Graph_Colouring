@@ -1,5 +1,6 @@
 package pl.polsl.metaheuristics;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.util.MathUtil;
@@ -17,14 +18,21 @@ import java.util.stream.IntStream;
 public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph;
     public Map<String, Integer> verticesColourMap = new HashMap<>();
-    private int maxNumberOfColours = CuckooSearchConstants.MAXIMAL_ROBUST_COLOUR_NUMBER;
+    public Double robustness = 100.0;
+    public long systemTime;
+    public long cpuTime;
+    public boolean colouringValid;
+    private int maxNumberOfColours;
     private List<CuckooAgent> cuckoos = new ArrayList<>();
-    private Double robustness = 100.0;
     private int numberOfCorrectSolutions = 0;
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 
-    public Map<String, Integer> colourTheGraph() {
-
+    public Map<String, Integer> colourTheGraph(final int numberOfAgents, final long cuckooSearchMaxIterations, 
+                                               final int maximalRobustColourNumber, final double alfaProblemScaleFactor, 
+                                               final double betaDistributionIndexFactor, final double parasitismOccurrenceProbability,
+                                               final int parasitismNormalDistributionDeviationFactor, final boolean forceHavingValidColouring) {
+        this.resetVariables();
+        this.maxNumberOfColours = maximalRobustColourNumber;
 //        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
 //                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
 //                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
@@ -32,7 +40,7 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
 //        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
 //                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"cuckoo.png");
 
-        this.init();
+        this.init(numberOfAgents);
 
         long i = 0;
 
@@ -40,28 +48,29 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         long startTime = System.nanoTime();
         long cpuStartTime = threadMxBean.getCurrentThreadCpuTime();
 
-        while(i < CuckooSearchConstants.CUCKOO_SEARCH_MAX_ITERATIONS) {
+        while(i < cuckooSearchMaxIterations) {
             //Calculating solution using Lévy flight operator
-            for(int k=0; k < CuckooSearchConstants.NUMBER_OF_AGENTS; k++) {
+            for(int k=0; k < numberOfAgents; k++) {
                 //wybranie M używając rozkładu Discrete Levi
-                int M = this.choosingVerticesToModifyUsingDiscreteLevyDist(CuckooSearchConstants.ALFA_PROBLEM_SCALE_FACTOR, CuckooSearchConstants.BETA_DISTRIBUTION_INDEX_FACTOR);
+                int M = this.choosingVerticesToModifyUsingDiscreteLevyDist(alfaProblemScaleFactor, betaDistributionIndexFactor);
                 //modyfikacja M wierzchołków
                 constructingBestLocalSolution(k, M);
             }
 
             //Parasitism solution calculation
-            for(int k=0; k < CuckooSearchConstants.NUMBER_OF_AGENTS; k++) {
+            for(int k=0; k < numberOfAgents; k++) {
                 //picking number from [0.0, 1.0)
                 double randomNumber = Math.random();
-                if(randomNumber <= CuckooSearchConstants.PARASITISM_OCCURRENCE_PROBABILITY) {
-                    int M = this.choosingVerticesToModifyUsingNormalDistribution(this.graph.vertexSet().size(), CuckooSearchConstants.PARASITISM_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR);
+                if(randomNumber <= parasitismOccurrenceProbability) {
+                    int M = this.choosingVerticesToModifyUsingNormalDistribution(this.graph.vertexSet().size(), parasitismNormalDistributionDeviationFactor);
                     constructingBestLocalSolution(k, M);
                 }
             }
 
             //Opracowanie wyników każdej iteracji
             Map<String, Integer> bestColouring = this.evaluateBestCuckooSolution(this.cuckoos);
-            if(CuckooSearchConstants.FORCE_HAVING_VALID_COLOURING) {
+            if(forceHavingValidColouring) {
+                System.out.println(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring));
                 if(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring))
                     this.verticesColourMap.putAll(bestColouring);
             } else {
@@ -81,7 +90,10 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
 
         System.out.println("Good colourings: " + numberOfCorrectSolutions);
         this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
-
+        Triple<Long, Long, Boolean> statistics = this.estimateMetaheuristicsStatistics(this.graph, this.verticesColourMap, startTime, cpuStartTime, cpuEndTime, endTime);
+        this.systemTime = statistics.getLeft();
+        this.cpuTime = statistics.getMiddle();
+        this.colouringValid = statistics.getRight();
         return this.verticesColourMap;
     }
 
@@ -93,11 +105,11 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         cuckoos.get(k).setCuckooGeneticSolution(this.compareOriginalAndMutatedSolution(cuckooSolution, mutatedSolution, this.graph));
     }
 
-    private void init() {
+    private void init(int numberOfAgents) {
         //Przygotowanie mapy koloru
         this.initVerticesColourMap(this.graph, this.verticesColourMap);
         //Przygotowanie agentow
-        this.initCuckoos(this.graph, this.cuckoos, CuckooSearchConstants.NUMBER_OF_AGENTS, maxNumberOfColours);
+        this.initCuckoos(this.graph, this.cuckoos, numberOfAgents, maxNumberOfColours);
     }
 
     private Map<String, Integer> generateRandomSolution(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, int maxNumberOfColours) {
@@ -212,6 +224,17 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
             //}
         }
         return cuckoos.get(bestSolutionIndex).getCuckooGeneticSolution();
+    }
+
+    private void resetVariables() {
+        this.verticesColourMap = new HashMap<>();
+        this.robustness = 100.0;
+        this.systemTime = 0;
+        this.cpuTime = 0;
+        this.colouringValid = false;
+        this.maxNumberOfColours = 0;
+        this.cuckoos = new ArrayList<>();
+        this.numberOfCorrectSolutions = 0;
     }
 
     public CuckooSearchHeuristic(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {

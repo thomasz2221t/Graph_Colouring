@@ -56,7 +56,7 @@ public class CustomWeightedGraphHelper {
 
         System.out.println(graph);
 
-        this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph2.png");
+        this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph2.png", true);
     }
 
     public ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> importDIMACSBenchmarkDataset(String folderPath) {
@@ -105,7 +105,7 @@ public class CustomWeightedGraphHelper {
         }
 
         System.out.println(graph.toString());
-        this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph4.png");
+        this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph4.png", true);
         return graph;
     }
 
@@ -223,7 +223,7 @@ public class CustomWeightedGraphHelper {
         return vertexNeighbourhoodList;
     }
 
-    public void savingGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String path) {
+    public void savingGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String path, boolean showEdgesValues) {
         JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
 
         //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
@@ -232,18 +232,22 @@ public class CustomWeightedGraphHelper {
         mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
         Collection<Object> cells =  graphModel.getCells().values();
         mxUtils.setCellStyles(graphComponent.getGraph().getModel(), cells.toArray(), mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+        if(!showEdgesValues) {
+            graphAdapter.getEdgeToCellMap().forEach((edge, cell) -> cell.setValue(null));
+        }
 
         mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
         layout.execute(graphAdapter.getDefaultParent());
 
         BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, Color.WHITE, false, null);
+        System.out.println(path);
         File imgFile = new File(path);
         try {
             ImageIO.write(image, "PNG", imgFile);
         } catch (IOException error) {}
     }
 
-    public void savingColouredGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, String path) {
+    public void savingColouredGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, String path, boolean showEdgesValues) {
         JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
         Random random = new Random();
         Map<Integer, String> colourCodingMap = new HashMap<>();
@@ -270,7 +274,10 @@ public class CustomWeightedGraphHelper {
         mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
         Collection<Object> cells =  graphModel.getCells().values();
         mxUtils.setCellStyles(graphComponent.getGraph().getModel(), cells.toArray(), mxConstants.STYLE_ENDARROW, mxConstants.NONE);
-
+        if(!showEdgesValues) {
+            graphAdapter.getEdgeToCellMap().forEach((edge, cell) -> cell.setValue(null));
+        }
+        System.out.println(path);
         mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
         layout.execute(graphAdapter.getDefaultParent());
 
@@ -279,6 +286,60 @@ public class CustomWeightedGraphHelper {
         try {
             ImageIO.write(image, "PNG", imgFile);
         } catch (IOException error) {}
+    }
+
+    public mxGraphComponent showingGraphInView(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, boolean showEdgesValues) {
+        JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
+
+        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
+        //usuwanie strzałek z wizualizacji
+        mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
+        mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
+        Collection<Object> cells = graphModel.getCells().values();
+        mxUtils.setCellStyles(graphComponent.getGraph().getModel(), cells.toArray(), mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+        if(!showEdgesValues) {
+            graphAdapter.getEdgeToCellMap().forEach((edge, cell) -> cell.setValue(null));
+        }
+
+        mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
+        layout.execute(graphAdapter.getDefaultParent());
+        return graphComponent;
+    }
+
+    public mxGraphComponent showingColouredGraphInView(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, boolean showEdgesValues) {
+        JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
+        Random random = new Random();
+        Map<Integer, String> colourCodingMap = new HashMap<>();
+        for (String vertex : verticesColourMap.keySet()) {
+            if(!colourCodingMap.containsKey(verticesColourMap.get(vertex))) {
+                float r = random.nextFloat();
+                float g = random.nextFloat();
+                float b = random.nextFloat();
+                Color randomColor = new Color(r, g, b);
+                colourCodingMap.put(verticesColourMap.get(vertex),
+                        "#"+Integer.toHexString(randomColor.getRGB()).substring(2)
+                );
+            }
+        }
+
+        for (String vertex : verticesColourMap.keySet()) {
+            Object vertexCell = graphAdapter.getVertexToCellMap().get(vertex);
+            graphAdapter.setCellStyles(mxConstants.STYLE_FILLCOLOR, colourCodingMap.get(verticesColourMap.get(vertex)), new Object[]{vertexCell});
+        }
+
+        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
+        //usuwanie strzałek z wizualizacji
+        mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
+        mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
+        Collection<Object> cells = graphModel.getCells().values();
+        mxUtils.setCellStyles(graphComponent.getGraph().getModel(), cells.toArray(), mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+        if(!showEdgesValues) {
+            graphAdapter.getEdgeToCellMap().forEach((edge, cell) -> cell.setValue(null));
+        }
+
+        mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
+        layout.execute(graphAdapter.getDefaultParent());
+        return graphComponent;
     }
 
     private static <V, Vv, E> DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> convert(Graph<V, E> source) {
