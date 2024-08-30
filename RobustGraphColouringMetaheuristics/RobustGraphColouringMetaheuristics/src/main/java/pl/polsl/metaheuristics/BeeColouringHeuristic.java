@@ -69,6 +69,13 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         this.systemTime = statistics.getLeft();
         this.cpuTime = statistics.getMiddle();
         this.colouringValid = statistics.getRight();
+        int numberOfUsedColors = 0;
+        for (Integer color: coloursMap.keySet()) {
+            if(coloursMap.get(color) > 0) {
+                numberOfUsedColors++;
+            }
+        }
+        System.out.println("Number of used colors: " + numberOfUsedColors);
         return this.verticesColourMap;
     }
 
@@ -164,10 +171,11 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         return neighbourhoodMap;
     }
 
-    private double calculatePassingProbability(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, BeeAgent bee, Map<String, CustomWeightedEdge> neighbourhood, Map<String, Double> passingProbabilites, BeesHive hive, double probabilitesSum, String vertex) {
+    private double calculatePassingProbability(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, BeeAgent bee, Map<String, Double> passingProbabilites, BeesHive hive, double probabilitesSum, String vertex) {
         if(bee.getType() == BeeAgentType.WORKER && !hive.getFeedingRegionInformation().containsKey(vertex)) {
             //pruning routes to feeding region
-            neighbourhood.remove(vertex);
+            //neighbourhood.remove(vertex);
+            return probabilitesSum;
         }
         //find edge
         CustomWeightedEdge edge = graph.getEdge(bee.getCurrentVertex(), vertex) != null
@@ -192,7 +200,7 @@ public class BeeColouringHeuristic extends AbstractColouringHeuristic {
         double probabilitesSum = 0.0;
 
         for (String vertex : neighbourhood.keySet()) {
-            probabilitesSum = this.calculatePassingProbability(graph, verticesColourMap, bee, neighbourhood, passingProbabilites, hive, probabilitesSum, vertex);
+            probabilitesSum = this.calculatePassingProbability(graph, verticesColourMap, bee, passingProbabilites, hive, probabilitesSum, vertex);
         }
         return this.estimateRouteByProbabilites(passingProbabilites, probabilitesSum);
     }

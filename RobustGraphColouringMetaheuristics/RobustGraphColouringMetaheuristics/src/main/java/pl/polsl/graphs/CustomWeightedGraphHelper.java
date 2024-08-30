@@ -168,7 +168,7 @@ public class CustomWeightedGraphHelper {
             System.err.println("Exception: Unable to open DIMACS file, file not found.");
         }
 
-        System.out.println(weightedGraph.toString());
+        //System.out.println(weightedGraph.toString());
         //this.savingGraphVisualizationToFile(weightedGraph, "src/main/java/pl/polsl/images/graphtest.png");
         return weightedGraph;
     }

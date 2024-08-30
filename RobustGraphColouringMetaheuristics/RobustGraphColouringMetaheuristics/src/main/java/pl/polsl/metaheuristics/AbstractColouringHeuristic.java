@@ -6,6 +6,7 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -103,8 +104,9 @@ public abstract class AbstractColouringHeuristic {
     }
 
     protected void getMetaheuristicsStatistics(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, double robustness, long startTime, long cpuStartTime, long cpuEndTime, long endTime) {
-        System.out.println("Execution time: " + (endTime - startTime) + "[ns]"); // nanoseconds
-        System.out.println("CPU execution time: " + (cpuEndTime - cpuStartTime) + "[ns]");// nanoseconds
+        DecimalFormat df = new DecimalFormat("#.####");
+        System.out.println("Execution time: " + df.format((endTime - startTime) / Math.pow(10,9)) + "[s]");
+        System.out.println("CPU execution time: " + df.format((cpuEndTime - cpuStartTime) / Math.pow(10,9)) + "[s]");// nanoseconds
         System.out.println("Robustness: " + robustness);
         System.out.println("Is colouring valid among solid edges: " + this.checkGraphValidityAmongSolidEdges(graph, verticesColourMap));
     }

@@ -70,7 +70,7 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
             //Opracowanie wyników każdej iteracji
             Map<String, Integer> bestColouring = this.evaluateBestCuckooSolution(this.cuckoos);
             if(forceHavingValidColouring) {
-                System.out.println(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring));
+                /*System.out.println(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring));*/
                 if(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring))
                     this.verticesColourMap.putAll(bestColouring);
             } else {
@@ -94,6 +94,7 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         this.systemTime = statistics.getLeft();
         this.cpuTime = statistics.getMiddle();
         this.colouringValid = statistics.getRight();
+        System.out.println("Number of used colors: " + maxNumberOfColours);
         return this.verticesColourMap;
     }
 

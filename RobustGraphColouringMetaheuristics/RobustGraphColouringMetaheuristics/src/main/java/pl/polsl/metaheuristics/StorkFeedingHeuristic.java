@@ -53,6 +53,13 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         this.systemTime = statistics.getLeft();
         this.cpuTime = statistics.getMiddle();
         this.colouringValid = statistics.getRight();
+        int numberOfUsedColors = 0;
+        for (Integer color: coloursMap.keySet()) {
+            if(coloursMap.get(color) > 0) {
+                numberOfUsedColors++;
+            }
+        }
+        System.out.println("Number of used colors: " + numberOfUsedColors);
         return this.verticesColourMap;
     }
 

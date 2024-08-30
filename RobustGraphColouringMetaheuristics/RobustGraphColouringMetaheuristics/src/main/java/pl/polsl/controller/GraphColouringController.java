@@ -3,6 +3,7 @@ package pl.polsl.controller;
 import lombok.Getter;
 import lombok.Setter;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
+import pl.polsl.constants.AntColouringConstants;
 import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.metaheuristics.AntColouringHeuristic;
@@ -22,9 +23,9 @@ public class GraphColouringController {
     private CustomWeightedGraphHelper customWeightedGraphHelper;
 
     public Map<String, Integer> runAntColouring(final int numberOfAgents, final long antColouringMaxIterations,
-                                                final int minimalRobustColourNumber, double pheromoneEvaporationWeight) {
+                                                final int maximalRobustColourNumber, double pheromoneEvaporationWeight) {
         this.antColouringHeuristic.graph = this.graph;
-        return this.antColouringHeuristic.colourTheGraph(numberOfAgents, antColouringMaxIterations, minimalRobustColourNumber, pheromoneEvaporationWeight);
+        return this.antColouringHeuristic.colourTheGraph(numberOfAgents, antColouringMaxIterations, maximalRobustColourNumber, maximalRobustColourNumber, pheromoneEvaporationWeight);
     }
 
     public Map<String, Integer> runCuckooSearch(final int numberOfAgents, final long cuckooSearchMaxIterations,

@@ -14,5 +14,5 @@ public final class CuckooSearchConstants {
     public static final double FITNESS_FUNCTION_ROBUSTNESS_FACTOR = 0.2;
     public static final double PARASITISM_OCCURRENCE_PROBABILITY = 0.20;
     public static final int PARASITISM_NORMAL_DISTRIBUTION_STANDARD_DEVIATION_FACTOR = 4;
-    public static final boolean FORCE_HAVING_VALID_COLOURING = false;
+    public static final boolean FORCE_HAVING_VALID_COLOURING = true;//false w testach true
 }

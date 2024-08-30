@@ -26,7 +26,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
     private List<AntAgent> ants = new ArrayList<>();
     private final CustomWeightedGraphHelper customWeightedGraphHelper = new CustomWeightedGraphHelper();
 
-    public Map<String, Integer> colourTheGraph(final int numberOfAgents, final long antColouringMaxIterations, final int minimalRobustColourNumber, final double pheromoneEvaporationWeight) {
+    public Map<String, Integer> colourTheGraph(final int numberOfAgents, final long antColouringMaxIterations, final int minimalRobustColourNumber, final int maximalRobustColourNumber, final double pheromoneEvaporationWeight) {
         ////////////////////////////////
         /////Przygotowanie zasobów/////
         //////////////////////////////
@@ -53,7 +53,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
 //            }
             //====
             for(int k = 0; k < this.ants.size(); k++) {
-                this.antOptimization(k);
+                this.antOptimization(k, maximalRobustColourNumber);
                 //======
             }
             //update feromonu
@@ -78,18 +78,25 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         this.systemTime = statistics.getLeft();
         this.cpuTime = statistics.getMiddle();
         this.colouringValid = statistics.getRight();
+        int numberOfUsedColors = 0;
+        for (Integer color: coloursMap.keySet()) {
+            if(coloursMap.get(color) > 0) {
+                numberOfUsedColors++;
+            }
+        }
+        System.out.println("Number of used colors: " + numberOfUsedColors);
         System.out.println("Koniec");
         return this.verticesColourMap;
     }
 
-    private void antOptimization(int k) {
+    private void antOptimization(int k, int maximalRobustColourNumber) {
         AntAgent ant = this.ants.get(k);
         //tablica lokalnych przejść mrówki
         Map<String, CustomWeightedEdge> vertexNeighbourhoodList = customWeightedGraphHelper.
                 getNeighbourhoodListOfVertex(this.graph, ant.getCurrentVertex());
         //=====
         //Nadaj kolor
-        this.assignColourToVertex(ant, vertexNeighbourhoodList);
+        this.assignColourToVertex(ant, vertexNeighbourhoodList, maximalRobustColourNumber);
         //====
         //obliczenie wag przejscia
         Map<String, Double> passingProbabilityMap = this.calculateAntPassingProbabilities(graph,
@@ -160,7 +167,7 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
         return minimalNeighbourColourIndex;
     }
 
-    private void assignColourToVertex(AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList) {
+    private void assignColourToVertex(AntAgent ant, Map<String, CustomWeightedEdge> vertexNeighbourhoodList, int maximalRobustColourNumber) {
         Integer oldColourIndex = this.verticesColourMap.get(ant.getCurrentVertex());
         Integer newColourIndex = -1;
         for (Integer colourIndex : this.coloursMap.keySet()) {
@@ -171,10 +178,11 @@ public class AntColouringHeuristic extends AbstractColouringHeuristic {
                 newColourIndex = colourIndex;
             }
         }
-        if(newColourIndex == -1) {//out of minimal colour, add new color
+        if(newColourIndex == -1)  {//out of minimal colour, add new color
             //check if some edge has penalty higher than const
             boolean allVerticesSolid = this.checkIfAllVerticesAreSolid(vertexNeighbourhoodList);
-            if(allVerticesSolid) {
+            if(allVerticesSolid) { //&& (coloursMap.keySet().size() <= maximalRobustColourNumber)) {
+                System.out.println("Dodaje");
                 //if all vertices are solid and out of minimal colour, then create new colour
                 newColourIndex = coloursMap.keySet().size();
                 this.coloursMap.put(coloursMap.keySet().size(), 0);
