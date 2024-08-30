@@ -12,34 +12,33 @@ import java.util.Map;
 
 public class BeeColouringPanel extends JPanel implements ActionListener {
 
-    private GraphColouringController controller;
-    private GraphPanel graphPanel;
-    private JLabel workersNumberLabel = new JLabel("Number of bees workers:");
-    private JFormattedTextField workersNumberText = new JFormattedTextField();
-    private JLabel scoutsNumberLabel = new JLabel("Number of bees scouts:");
-    private JFormattedTextField scoutsNumberText = new JFormattedTextField();
-    private JLabel iterationsLabel = new JLabel("Number of iteration to execute:");
-    private JFormattedTextField iterationsText = new JFormattedTextField();
-    private JLabel colourNumberLabel = new JLabel("Number of colours:");
-    private JFormattedTextField colourNumberText = new JFormattedTextField();
-    private JLabel feedingRegionDepthLabel = new JLabel("Depth of feeding region:");
-    private JFormattedTextField feedingRegionDepthText = new JFormattedTextField();
-    private JLabel workerOperationsLabel = new JLabel("Number of workers' operations:");
-    private JFormattedTextField workerOperationsText = new JFormattedTextField();
-    private JLabel scoutOperationsLabel = new JLabel("Number of scouts' operations:");
-    private JFormattedTextField scoutOperationsText = new JFormattedTextField();
-    private JLabel hiveShuffleLabel = new JLabel("Hive shuffle iteration period:");
-    private JFormattedTextField hiveShuffleText = new JFormattedTextField();
-    private JLabel resultsLabel = new JLabel("Results:");
-    private JLabel timeLabel = new JLabel("Execution time:");
-    private JLabel cpuTimeLabel = new JLabel("CPU execution time:");
-    private JLabel robustnessLabel = new JLabel("Robustness:");
-    private JLabel validLabel = new JLabel("Colouring is valid:");
-    private JButton runButton = new JButton("Run algorithm");
+    private final GraphColouringController controller;
+    private final GraphPanel graphPanel;
+    private final JLabel workersNumberLabel = new JLabel("Number of bees workers:");
+    private final JFormattedTextField workersNumberText = new JFormattedTextField();
+    private final JLabel scoutsNumberLabel = new JLabel("Number of bees scouts:");
+    private final JFormattedTextField scoutsNumberText = new JFormattedTextField();
+    private final JLabel iterationsLabel = new JLabel("Number of iteration to execute:");
+    private final JFormattedTextField iterationsText = new JFormattedTextField();
+    private final JLabel colourNumberLabel = new JLabel("Number of colours:");
+    private final JFormattedTextField colourNumberText = new JFormattedTextField();
+    private final JLabel feedingRegionDepthLabel = new JLabel("Depth of feeding region:");
+    private final JFormattedTextField feedingRegionDepthText = new JFormattedTextField();
+    private final JLabel workerOperationsLabel = new JLabel("Number of workers' operations:");
+    private final JFormattedTextField workerOperationsText = new JFormattedTextField();
+    private final JLabel scoutOperationsLabel = new JLabel("Number of scouts' operations:");
+    private final JFormattedTextField scoutOperationsText = new JFormattedTextField();
+    private final JLabel hiveShuffleLabel = new JLabel("Hive shuffle iteration period:");
+    private final JFormattedTextField hiveShuffleText = new JFormattedTextField();
+    private final JLabel resultsLabel = new JLabel("Results:");
+    private final JLabel timeLabel = new JLabel("Execution time:");
+    private final JLabel cpuTimeLabel = new JLabel("CPU execution time:");
+    private final JLabel robustnessLabel = new JLabel("Robustness:");
+    private final JLabel validLabel = new JLabel("Colouring is valid:");
+    private final JButton runButton = new JButton("Run algorithm");
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("Przycisk pszczoły");
         Map<String, Integer> colouring = this.controller.runBeeColouring((Integer) this.workersNumberText.getValue(),
                 (Integer) this.scoutsNumberText.getValue(), (Long) this.iterationsText.getValue(),
                 (Integer) this.colourNumberText.getValue(), (Integer) this.feedingRegionDepthText.getValue(),

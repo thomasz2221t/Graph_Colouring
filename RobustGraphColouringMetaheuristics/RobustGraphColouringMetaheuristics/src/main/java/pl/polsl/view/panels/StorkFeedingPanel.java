@@ -12,30 +12,29 @@ import java.util.Map;
 
 public class StorkFeedingPanel extends JPanel implements ActionListener {
 
-    private GraphColouringController controller;
-    private GraphPanel graphPanel;
-    private JLabel agentsNumberLabel = new JLabel("Number of artificial storks:");
-    private JFormattedTextField agentsNumberText = new JFormattedTextField();
-    private JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
-    private JFormattedTextField iterationsText = new JFormattedTextField();
-    private JLabel coloursNumLabel = new JLabel("Number of colours:");
-    private JFormattedTextField coloursNumText = new JFormattedTextField();
-    private JLabel goodFitnessLabel = new JLabel("Fitness function for good colouring:");
-    private JFormattedTextField goodFitnessText = new JFormattedTextField();
-    private JLabel moderateFitnessLabel = new JLabel("Fitness function for moderate colouring:");
-    private JFormattedTextField moderateFitnessText = new JFormattedTextField();
-    private JLabel gaussianAnimalSightDeviationLabel = new JLabel("Animal sight normal distribution deviation:");
-    private JFormattedTextField gaussianAnimalSightDeviationText = new JFormattedTextField();
-    private JLabel resultsLabel = new JLabel("Results:");
-    private JLabel timeLabel = new JLabel("Execution time:");
-    private JLabel cpuTimeLabel = new JLabel("CPU execution time:");
-    private JLabel robustnessLabel = new JLabel("Robustness:");
-    private JLabel validLabel = new JLabel("Colouring is valid:");
-    private JButton runButton = new JButton("Run algorithm");
+    private final GraphColouringController controller;
+    private final GraphPanel graphPanel;
+    private final JLabel agentsNumberLabel = new JLabel("Number of artificial storks:");
+    private final JFormattedTextField agentsNumberText = new JFormattedTextField();
+    private final JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
+    private final JFormattedTextField iterationsText = new JFormattedTextField();
+    private final JLabel coloursNumLabel = new JLabel("Number of colours:");
+    private final JFormattedTextField coloursNumText = new JFormattedTextField();
+    private final JLabel goodFitnessLabel = new JLabel("Fitness function for good colouring:");
+    private final JFormattedTextField goodFitnessText = new JFormattedTextField();
+    private final JLabel moderateFitnessLabel = new JLabel("Fitness function for moderate colouring:");
+    private final JFormattedTextField moderateFitnessText = new JFormattedTextField();
+    private final JLabel gaussianAnimalSightDeviationLabel = new JLabel("Animal sight normal distribution deviation:");
+    private final JFormattedTextField gaussianAnimalSightDeviationText = new JFormattedTextField();
+    private final JLabel resultsLabel = new JLabel("Results:");
+    private final JLabel timeLabel = new JLabel("Execution time:");
+    private final JLabel cpuTimeLabel = new JLabel("CPU execution time:");
+    private final JLabel robustnessLabel = new JLabel("Robustness:");
+    private final JLabel validLabel = new JLabel("Colouring is valid:");
+    private final JButton runButton = new JButton("Run algorithm");
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("Przycisk bociany");
         Map<String, Integer> colouring = this.controller.runStorkFeedingColouring((Integer) this.agentsNumberText.getValue(),
                 (Long) this.iterationsText.getValue(), (Integer) this.coloursNumText.getValue(),
                 (Double) this.goodFitnessText.getValue(), (Double) this.moderateFitnessText.getValue(),

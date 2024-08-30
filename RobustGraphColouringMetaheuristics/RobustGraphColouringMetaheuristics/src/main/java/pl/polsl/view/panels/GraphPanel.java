@@ -17,13 +17,12 @@ import java.util.Map;
 public class GraphPanel extends JPanel implements KeyListener {
 
     private mxGraphComponent graphVisualisation;
-    private CustomWeightedGraphHelper graphHelper = new CustomWeightedGraphHelper();
+    private final CustomWeightedGraphHelper graphHelper = new CustomWeightedGraphHelper();
     private Map<String, Integer> verticesColourMap = new HashMap<>();
 
     public void showGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph, boolean showEdgeWeights) {
         this.verticesColourMap = new HashMap<>();
         this.graphVisualisation = graphHelper.showingGraphInView(graph, showEdgeWeights);
-        //mxIGraphLayout layout = new mxHierarchicalLayout(graph);
         this.setLayout(new BorderLayout());
         this.setVisible(false);
         this.removeAll();
@@ -75,7 +74,6 @@ public class GraphPanel extends JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         char c = e.getKeyChar();
-//        System.out.println(c);
         if(c == 'z') {
             this.graphVisualisation.zoomIn();
         } else if(c == 'x') {
@@ -87,7 +85,5 @@ public class GraphPanel extends JPanel implements KeyListener {
     public GraphPanel() {
         addKeyListener(this);
         setFocusable(true);
-//        setBackground(Color.GREEN);
-//        setPreferredSize(new Dimension(800, 700));
     }
 }

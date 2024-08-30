@@ -1,9 +1,7 @@
 package pl.polsl.controller;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
-import pl.polsl.constants.AntColouringConstants;
 import pl.polsl.constants.GraphConstants;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.metaheuristics.AntColouringHeuristic;
@@ -16,11 +14,11 @@ import java.util.Map;
 @Getter
 public class GraphColouringController {
     public DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph;
-    private AntColouringHeuristic antColouringHeuristic;
-    private CuckooSearchHeuristic cuckooSearchHeuristic;
-    private BeeColouringHeuristic beeColouringHeuristic;
-    private StorkFeedingHeuristic storkFeedingHeuristic;
-    private CustomWeightedGraphHelper customWeightedGraphHelper;
+    private final AntColouringHeuristic antColouringHeuristic;
+    private final CuckooSearchHeuristic cuckooSearchHeuristic;
+    private final BeeColouringHeuristic beeColouringHeuristic;
+    private final StorkFeedingHeuristic storkFeedingHeuristic;
+    private final CustomWeightedGraphHelper customWeightedGraphHelper;
 
     public Map<String, Integer> runAntColouring(final int numberOfAgents, final long antColouringMaxIterations,
                                                 final int maximalRobustColourNumber, double pheromoneEvaporationWeight) {
@@ -57,7 +55,6 @@ public class GraphColouringController {
     }
 
     public void importGraphFromPath(String path) {
-        System.out.println(path);
         DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = customWeightedGraphHelper.importDIMACSUnweightedGraphAsWeighted(path);
         this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(graph,
                 GraphConstants.PROPORTION_EDGES_TO_FUZZ,
