@@ -39,7 +39,6 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
                 this.storkOptimisation(this.graph, this.verticesColourMap, this.coloursMap, stork, goodColouringFitness, moderateColouringFitness, sightNormalDistributionDeviationFactor);
             }
             i++;
-            //only for checking robustness criterrium
             if(i % StorkFeedingConstants.ROBUSTNESS_UPDATE_INTERVAL == 0) {
                 this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             }
@@ -57,21 +56,18 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
     }
 
     private void init(int numberOfAgents, int maximalRobustColourNumber) {
-        //Przygotowanie mapy koloru Map<V,Integer> (Interface VertexColoringAlgorithm.Coloring<V>)
         this.initVerticesColourMap(this.graph, this.verticesColourMap);
-        //Przygotowanie listy colorow c
         this.initColourList(this.coloursMap, this.graph.vertexSet().size(), maximalRobustColourNumber);
         this.initStorks(this.storks, numberOfAgents);
     }
 
-    private List<StorkAgent> initStorks(List<StorkAgent> storks, int numberOfAgents) {
+    private void initStorks(List<StorkAgent> storks, int numberOfAgents) {
         for (int i = 0; i < numberOfAgents; i++) {
             StorkAgent stork = new StorkAgent();
             String vertexToVisit = customWeightedGraphHelper.getRandomVertexFromGraph(this.graph);
             stork.setCurrentVertex(vertexToVisit);
             storks.add(stork);
         }
-        return storks;
     }
 
     private double calculatePrecisionFitnessFunction(Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhoodList, String currentVertex) {
@@ -89,12 +85,6 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         int numberOfVertices = this.choosingVerticesToModifyUsingNormalDistribution(neighbourhoodMap.keySet().size(), sightNormalDistributionDeviationFactor);
         numberOfVertices = Math.max(numberOfVertices, 1);
         numberOfVertices = Math.min(numberOfVertices, neighbourhoodMap.size());
-//        List<Integer> randomValues = new Random()
-//                .ints(0, neighbourhoodMap.size())
-//                .distinct()
-//                .limit(numberOfVertices)
-//                .boxed()
-//                .toList();
         Random random = new Random();
         List<String> randomVertices = neighbourhoodMap
                 .keySet()
@@ -106,11 +96,6 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         for(String vertex : randomVertices) {
             reducedNeighbourhood.put(vertex, neighbourhoodMap.get(vertex));
         }
-//        List<String> neighbourhoodVertices = neighbourhoodMap.keySet().stream().toList();
-//        for (Integer randomValue : randomValues) {
-//            String vertex = neighbourhoodVertices.get(randomValue);
-//            reducedNeighbourhood.put(vertex,neighbourhoodMap.get(vertex));
-//        }
         return reducedNeighbourhood;
     }
 
@@ -120,10 +105,8 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
     }
 
     private void greedyColourReductionOptimization(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, Map<String, CustomWeightedEdge> neighbourhoodMap,  String currentVertex) {
-        //zapisanie poprzedniego koloru
         Integer currentColour = verticesColourMap.get(currentVertex);
         Integer currentColourOccurrence = coloursMap.get(currentColour);
-        //checking colour changing on
         for(Integer colour : coloursMap.keySet()) {
             Integer colourOccurrence = coloursMap.get(colour);
             if(currentColourOccurrence > colourOccurrence && checkIfColourIsValid(neighbourhoodMap, verticesColourMap, colour)) {
@@ -140,38 +123,28 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         Integer oldColour = verticesColourMap.get(currentVertex);
         Integer randomColour = this.randomlySelectColour(coloursMap);
         boolean isRandomColourValid = checkIfColourIsValid(neighbourhoodMap, verticesColourMap, randomColour);
-        //check if colouring is valid, if so approve changes and update pheromone
         if (isRandomColourValid) {
             this.applyColouring(verticesColourMap, coloursMap, currentVertex, oldColour, randomColour);
         }
     }
 
     private void colouringVertexWithDSatur(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, Map<String, CustomWeightedEdge> neighbourhoodMap, String currentVertex){
-        //zapisanie poprzedniego koloru
         Integer oldColour = verticesColourMap.get(currentVertex);
-        //przygotowanie tablicy kolorow wierzcholkow z barwami z colourMap
         Map<Integer, Integer> neighbourColours = new HashMap<>(coloursMap);
         neighbourColours.replaceAll((key, value) -> value = 0);
-        //get colour occurrence in neighbour vertices
         for(String vertex : neighbourhoodMap.keySet()) {
             Integer vertexColour = verticesColourMap.get(vertex);
             neighbourColours.replace(vertexColour, neighbourColours.get(vertexColour) + 1);
         }
-        //excluding 0 colour as it stands for not coloured
         neighbourColours.remove(0);
-        //get minimal colour
         Integer minimalColour = Collections.min(neighbourColours.entrySet(), Map.Entry.comparingByValue()).getKey();
-        //update supervisor colour
         this.applyColouring(verticesColourMap, coloursMap, currentVertex, oldColour, minimalColour);
     }
 
     private double calculatePassingProbability(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, Map<String, CustomWeightedEdge> neighbourhoodMap, StorkAgent stork, Map<String, Double> passingProbabilites, double probabilitesSum, String vertex) {
-        //find edge
         CustomWeightedEdge edge = graph.getEdge(stork.getCurrentVertex(), vertex) != null
                 ? graph.getEdge(stork.getCurrentVertex(), vertex)
                 : graph.getEdge(vertex, stork.getCurrentVertex());
-        //calculating heuristic information
-        //(waga * robustness)/ (waga * odwiedzone + waga * fitness)
         double robustness = graph.getEdgeWeight(edge);
         double vertexFitness =  this.calculatePrecisionFitnessFunction(verticesColourMap, neighbourhoodMap, vertex);
         double vertexVisited = stork.getVisitedVertexMemory().contains(vertex) ? 1 : 0;
@@ -204,16 +177,12 @@ public class StorkFeedingHeuristic extends AbstractColouringHeuristic {
         double fitnessValue = this.calculatePrecisionFitnessFunction(verticesColourMap, neighbourhoodMap, currentVertex);
 
         if (fitnessValue < goodColouringFitness && fitnessValue >= moderateColouringFitness) {
-            //moderate colouring - dSatur for vertex / animal sight, dstaur based on part of neighbourhood
             this.colouringWithDSaturOnReducedNeignbourhood(verticesColourMap, coloursMap, currentVertex, neighbourhoodMap, sightNormalDistributionDeviationFactor);
         } else if(fitnessValue >= StorkFeedingConstants.PERFECT_COLOURING_FITNESS) {
-            //perfect colouring - colour improvement
             this.greedyColourReductionOptimization(verticesColourMap, coloursMap, neighbourhoodMap, currentVertex);
-        } else if (fitnessValue >= goodColouringFitness) {//&& fitnessValue < StorkFeedingConstants.PERFECT_COLOURING_FITNESS) {
-            //good colouring - colouring improvement
+        } else if (fitnessValue >= goodColouringFitness) {
             this.stochasticSolutionOptimization(verticesColourMap, coloursMap, neighbourhoodMap, currentVertex);
         } else if (fitnessValue < moderateColouringFitness && fitnessValue >= StorkFeedingConstants.LOW_COLOURING_FITNESS) {
-            //low colouring - dSatur for neighbourhood / dsatur for vertex
             this.colouringVertexWithDSatur(verticesColourMap, coloursMap, neighbourhoodMap, currentVertex);
         }
         this.relocateStorkToNextVertex(stork, this.estimateNewRouteForStork(graph, verticesColourMap, neighbourhoodMap, stork));

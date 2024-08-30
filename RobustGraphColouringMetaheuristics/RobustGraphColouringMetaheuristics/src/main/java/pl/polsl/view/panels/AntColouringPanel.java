@@ -31,7 +31,6 @@ public class AntColouringPanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("Przycisk mrówki");
         Map<String, Integer> colouring = this.controller.runAntColouring((Integer) this.agentsNumberText.getValue(), (Long) this.iterationsText.getValue(), (Integer) this.coloursNumText.getValue(), (Double) this.pheromoneEvaporationText.getValue());
         DecimalFormat df = new DecimalFormat("#.####");
         this.timeLabel.setText("Execution time: " + df.format(this.controller.getAntColouringHeuristic().systemTime / Math.pow(10,9)) + "[s]");
@@ -47,7 +46,6 @@ public class AntColouringPanel extends JPanel implements ActionListener {
         this.graphPanel = graphPanel;
         setLayout(new GridLayout(22,1));
         runButton.addActionListener(this);
-//        this.runButton.setPreferredSize(new Dimension(100,50));
         this.agentsNumberText.setValue(AntColouringConstants.NUMBER_OF_AGENTS);
         this.iterationsText.setValue(AntColouringConstants.ANT_COLOURING_MAX_ITERATIONS);
         this.coloursNumText.setValue(AntColouringConstants.MINIMAL_ROBUST_COLOUR_NUMBER);

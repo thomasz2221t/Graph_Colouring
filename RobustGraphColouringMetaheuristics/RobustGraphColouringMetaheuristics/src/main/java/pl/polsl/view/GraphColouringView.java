@@ -30,16 +30,8 @@ public class GraphColouringView extends JFrame implements ActionListener, KeyLis
     private StorkFeedingPanel storkPanel;
     private boolean showEdgeWeights = true;
 
-//    public showGraph(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph) {
-//        Container frame = getContentPane();
-//        Component graphComponent = frame.getComponent(0);
-//        graphComponent.
-//
-//    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println(e.getActionCommand());
         if(Objects.equals(e.getActionCommand(), "Choose graph")) {
             JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
@@ -143,13 +135,7 @@ public class GraphColouringView extends JFrame implements ActionListener, KeyLis
         tabbedPane.addTab("SFO", null, this.storkPanel, "Run Stork Feeding Optimisation");
         this.graphPanel.setPreferredSize(new Dimension(9000, 800));
         this.graphPanel.requestFocus();
-//        graphPanel.addKeyListener(graphPanel);
-//        graphPanel.setFocusable(true);
         tabbedPane.setPreferredSize(new Dimension(300, 800));
-//        GridBagConstraints graphConstraints = new GridBagConstraints();
-//        graphConstraints.gridwidth = 800;
-//        GridBagConstraints algorithmsPaneConstraints = new GridBagConstraints();
-//        algorithmsPaneConstraints.gridwidth = 400;
         boxes[0].add(this.graphPanel);
         boxes[1].add(tabbedPane);
         this.addKeyListener(this);

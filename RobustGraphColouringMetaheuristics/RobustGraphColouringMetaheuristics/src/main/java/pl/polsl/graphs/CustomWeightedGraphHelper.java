@@ -23,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.NotDirectoryException;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,112 +33,6 @@ public class CustomWeightedGraphHelper {
         public String toString() {
             return Double.toString(getWeight());
         }
-    }
-
-    public void testGraph() {
-        DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(CustomWeightedGraphHelper.CustomWeightedEdge.class);
-
-        String x1 = "v1";
-        String x2 = "v2";
-        String x3 = "v3";
-
-        graph.addVertex(x1);
-        graph.addVertex(x2);
-        graph.addVertex(x3);
-
-        CustomWeightedGraphHelper.CustomWeightedEdge e1 = graph.addEdge(x1, x2);
-        graph.setEdgeWeight(e1, 2.0);
-        CustomWeightedGraphHelper.CustomWeightedEdge e2 = graph.addEdge(x2, x3);
-        graph.setEdgeWeight(e2, 3.0);
-        CustomWeightedGraphHelper.CustomWeightedEdge e3 = graph.addEdge(x3, x1);
-        graph.setEdgeWeight(e3, 0.19);
-
-        System.out.println(graph);
-
-        this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph2.png", true);
-    }
-
-    public ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> importDIMACSBenchmarkDataset(String folderPath) {
-        ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> dimacsDataset = new ArrayList<>();
-        DIMACSImporter<String, CustomWeightedEdge> dimacsImporter = new DIMACSImporter<>();
-        try{
-            File dimacsFolder = new File(folderPath);
-            if(dimacsFolder.isDirectory()) {
-                for(final File dimacsFile : dimacsFolder.listFiles()) {
-                    if(!dimacsFile.isDirectory()) {
-                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
-                        try {
-                            dimacsImporter.importGraph(graph, dimacsFile);
-                            dimacsDataset.add(graph);
-//                            System.out.println("Good file:" + dimacsFile.getPath());
-                        } catch (Exception e) {
-//                            System.out.println(dimacsFile.getPath());
-                            System.err.println("Exception: DIMACS file " + dimacsFile.getPath() + " corrupted");
-                        }
-                    }
-                }
-            } else {
-                throw new NotDirectoryException("Given path does not lead to directory");
-            }
-        } catch(NotDirectoryException e) {
-            System.err.println("Exception: Unable to open DIMACS graphs directory");
-        }
-        return dimacsDataset;
-    }
-
-    public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> importGraphInDIMACSFormat(String filePath) {
-        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
-        DIMACSImporter<String, CustomWeightedEdge> dimacsImporter = new DIMACSImporter<>();
-
-        try{
-            File dimacsFile = new File(filePath);
-            if(dimacsFile.exists()) {
-                dimacsImporter.importGraph(graph, dimacsFile);
-            } else {
-                throw new FileNotFoundException("File does not exist");
-            }
-        } catch(NullPointerException e) {
-            System.err.println("Exception: Unable to open DIMACS file, pathname is null.");
-        } catch (FileNotFoundException e) {
-            System.err.println("Exception: Unable to open DIMACS file, file not found.");
-        }
-
-        System.out.println(graph.toString());
-        this.savingGraphVisualizationToFile(graph, "src/main/java/pl/polsl/images/graph4.png", true);
-        return graph;
-    }
-
-    public ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> importDIMACSDatasetUnweightedGraphsAsWeighted(String folderPath) {
-        ArrayList<DefaultUndirectedWeightedGraph<String, CustomWeightedEdge>> dimacsDataset = new ArrayList<>();
-        DIMACSImporter<String, DefaultEdge> dimacsImporter = new DIMACSImporter<>();
-        try {
-            File dimacsFolder = new File(folderPath);
-            if (dimacsFolder.isDirectory()) {
-                for (final File dimacsFile : dimacsFolder.listFiles()) {
-                    if (!dimacsFile.isDirectory()) {
-                        DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graphWeighted = new DefaultUndirectedWeightedGraph<>(
-                                SupplierUtil.createStringSupplier(),
-                                SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
-                        DefaultUndirectedGraph<String, DefaultEdge> graphUnweighted = new DefaultUndirectedGraph<>(
-                                SupplierUtil.createStringSupplier(),
-                                SupplierUtil.createDefaultEdgeSupplier(),
-                                false);
-                        try {
-                            dimacsImporter.importGraph(graphUnweighted, dimacsFile);
-                            graphWeighted = this.convert(graphUnweighted);
-                            dimacsDataset.add(graphWeighted);
-                        } catch (Exception e) {
-                            System.err.println("Exception: DIMACS file " + dimacsFile.getPath() + " corrupted");
-                        }
-                    }
-                }
-            } else {
-                throw new NotDirectoryException("Given path does not lead to directory");
-            }
-        } catch (NotDirectoryException e) {
-            System.err.println("Exception: Unable to open DIMACS graphs directory");
-        }
-        return dimacsDataset;
     }
 
     public DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> importDIMACSUnweightedGraphAsWeighted(String filePath) {
@@ -168,8 +61,6 @@ public class CustomWeightedGraphHelper {
             System.err.println("Exception: Unable to open DIMACS file, file not found.");
         }
 
-        System.out.println(weightedGraph.toString());
-        //this.savingGraphVisualizationToFile(weightedGraph, "src/main/java/pl/polsl/images/graphtest.png");
         return weightedGraph;
     }
 
@@ -226,8 +117,6 @@ public class CustomWeightedGraphHelper {
     public void savingGraphVisualizationToFile(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, String path, boolean showEdgesValues) {
         JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
 
-        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
-        //usuwanie strzałek z wizualizacji
         mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
         mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
         Collection<Object> cells =  graphModel.getCells().values();
@@ -240,7 +129,6 @@ public class CustomWeightedGraphHelper {
         layout.execute(graphAdapter.getDefaultParent());
 
         BufferedImage image = mxCellRenderer.createBufferedImage(graphAdapter, null, 2, Color.WHITE, false, null);
-        System.out.println(path);
         File imgFile = new File(path);
         try {
             ImageIO.write(image, "PNG", imgFile);
@@ -268,8 +156,6 @@ public class CustomWeightedGraphHelper {
             graphAdapter.setCellStyles(mxConstants.STYLE_FILLCOLOR, colourCodingMap.get(verticesColourMap.get(vertex)), new Object[]{vertexCell});
         }
 
-        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
-        //usuwanie strzałek z wizualizacji
         mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
         mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
         Collection<Object> cells =  graphModel.getCells().values();
@@ -277,7 +163,6 @@ public class CustomWeightedGraphHelper {
         if(!showEdgesValues) {
             graphAdapter.getEdgeToCellMap().forEach((edge, cell) -> cell.setValue(null));
         }
-        System.out.println(path);
         mxIGraphLayout layout = new mxCircleLayout(graphAdapter);
         layout.execute(graphAdapter.getDefaultParent());
 
@@ -291,8 +176,6 @@ public class CustomWeightedGraphHelper {
     public mxGraphComponent showingGraphInView(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, boolean showEdgesValues) {
         JGraphXAdapter<String, CustomWeightedEdge> graphAdapter = new JGraphXAdapter<>(graph);
 
-        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
-        //usuwanie strzałek z wizualizacji
         mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
         mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
         Collection<Object> cells = graphModel.getCells().values();
@@ -327,8 +210,6 @@ public class CustomWeightedGraphHelper {
             graphAdapter.setCellStyles(mxConstants.STYLE_FILLCOLOR, colourCodingMap.get(verticesColourMap.get(vertex)), new Object[]{vertexCell});
         }
 
-        //TODO: Można zadziałać z JPanel czy coś, wtedy getContentPane().add(graphComponent);
-        //usuwanie strzałek z wizualizacji
         mxGraphComponent graphComponent = new mxGraphComponent(graphAdapter);
         mxGraphModel graphModel = (mxGraphModel)graphComponent.getGraph().getModel();
         Collection<Object> cells = graphModel.getCells().values();
@@ -344,21 +225,14 @@ public class CustomWeightedGraphHelper {
 
     private static <V, Vv, E> DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> convert(Graph<V, E> source) {
         DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> result = new DefaultUndirectedWeightedGraph<>(SupplierUtil.createStringSupplier(), SupplierUtil.createSupplier(CustomWeightedGraphHelper.CustomWeightedEdge.class));
-        //source.vertexSet().forEach(v -> result.addVertex(vertexMapper.apply(v)));
         source.edgeSet()
                 .forEach(
                         e -> {
                             String sourceV = (String) source.getEdgeSource(e);
-                            //Vv mappedSourceV = vertexMapper.apply(sourceV);
                             String targetV = (String) source.getEdgeTarget(e);
-                            //Vv mappedTargetV = vertexMapper.apply(targetV);
-                            //result.addVertex(mappedSourceV);
-                            //result.addVertex(mappedTargetV);
-                            //CustomWeightedEdge ee = result.addEdge(mappedSourceV, mappedTargetV);
                             result.addVertex(sourceV);
                             result.addVertex(targetV);
                             CustomWeightedEdge ee = result.addEdge(sourceV, targetV);
-                            //double edgeWeight = source.getEdgeWeight(e);
                             double edgeWeight = 1.0;
                             result.setEdgeWeight(ee, edgeWeight);
                         });

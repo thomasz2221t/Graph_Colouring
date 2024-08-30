@@ -6,6 +6,7 @@ import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import pl.polsl.graphs.CustomWeightedGraphHelper;
 import pl.polsl.graphs.CustomWeightedGraphHelper.CustomWeightedEdge;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -13,22 +14,18 @@ import java.util.Random;
 
 public abstract class AbstractColouringHeuristic {
 
-    protected Map<String, Integer> initVerticesColourMap(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {
+    protected void initVerticesColourMap(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap) {
         List<String> vertexList = graph.vertexSet().stream().toList();
-        //Integer colourIndex = 0;
         for (String vertex: vertexList) {
             verticesColourMap.put(vertex, 0);
-            //colourIndex++;
         }
-        return verticesColourMap;
     }
 
-    protected Map<Integer, Integer> initColourList(Map<Integer, Integer> coloursMap, int numberOfGraphVertices, int beginningNumberOfColours) {
+    protected void initColourList(Map<Integer, Integer> coloursMap, int numberOfGraphVertices, int beginningNumberOfColours) {
         coloursMap.put(0, numberOfGraphVertices);
         for(int i = 1; i <= beginningNumberOfColours; i++) {
             coloursMap.put(i, 0);
         }
-        return coloursMap;
     }
 
     protected int choosingVerticesToModifyUsingNormalDistribution(int numberOfVerticesInGraph, int standardDeviationDivisionFactor) {
@@ -53,7 +50,7 @@ public abstract class AbstractColouringHeuristic {
 
     protected boolean checkIfColourIsValid(Map<String, CustomWeightedEdge> randomVertexNeighbourhoodList, Map<String, Integer> verticesColourMap, Integer randomColour) {
         for (String vertex : randomVertexNeighbourhoodList.keySet()) {
-            if (verticesColourMap.get(vertex) == randomColour) {
+            if (Objects.equals(verticesColourMap.get(vertex), randomColour)) {
                 return false;
             }
         }
@@ -61,15 +58,12 @@ public abstract class AbstractColouringHeuristic {
     }
 
     protected void applyColouring(Map<String, Integer> verticesColourMap, Map<Integer, Integer> coloursMap, String currentVertex, Integer oldColour, Integer newColour) {
-        //update supervisor colour
         verticesColourMap.replace(currentVertex, newColour);
-        //update coloursMap
         coloursMap.replace(oldColour, coloursMap.get(oldColour) - 1);
         coloursMap.replace(newColour, coloursMap.get(newColour) + 1);
     }
 
     protected String estimateRouteByProbabilites(Map<String, Double> passingProbabilites, double probabilitesSum) {
-        //picking random vertex based on heuristic information as weight
         int index = 0;
         List<String> verticesList = passingProbabilites.keySet().stream().toList();
         for(double random = Math.random() * probabilitesSum; index < passingProbabilites.size() - 1; ++index) {
@@ -103,8 +97,9 @@ public abstract class AbstractColouringHeuristic {
     }
 
     protected void getMetaheuristicsStatistics(DefaultUndirectedWeightedGraph<String, CustomWeightedGraphHelper.CustomWeightedEdge> graph, Map<String, Integer> verticesColourMap, double robustness, long startTime, long cpuStartTime, long cpuEndTime, long endTime) {
-        System.out.println("Execution time: " + (endTime - startTime) + "[ns]"); // nanoseconds
-        System.out.println("CPU execution time: " + (cpuEndTime - cpuStartTime) + "[ns]");// nanoseconds
+        DecimalFormat df = new DecimalFormat("#.####");
+        System.out.println("Execution time: " + df.format((endTime - startTime) / Math.pow(10,9)) + "[s]");
+        System.out.println("CPU execution time: " + df.format((cpuEndTime - cpuStartTime) / Math.pow(10,9)) + "[s]");
         System.out.println("Robustness: " + robustness);
         System.out.println("Is colouring valid among solid edges: " + this.checkGraphValidityAmongSolidEdges(graph, verticesColourMap));
     }

@@ -12,33 +12,32 @@ import java.util.Map;
 
 public class CuckooSearchPanel extends JPanel implements ActionListener {
 
-    private GraphColouringController controller;
-    private GraphPanel graphPanel;
-    private JLabel agentsNumberLabel = new JLabel("Number of artificial nests");
-    private JFormattedTextField agentsNumberText = new JFormattedTextField();
-    private JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
-    private JFormattedTextField iterationsText = new JFormattedTextField();
-    private JLabel coloursNumLabel = new JLabel("Number of colours:");
-    private JFormattedTextField coloursNumText = new JFormattedTextField();
-    private JLabel randomWalkAlfaLabel = new JLabel("Lévy flight alfa (scale) parameter value:");
-    private JFormattedTextField randomWalkAlfaText = new JFormattedTextField();
-    private JLabel randomWalkBetaLabel = new JLabel("Lévy flight beta (distribution) parameter value:");
-    private JFormattedTextField randomWalkBetaText = new JFormattedTextField();
-    private JLabel parasitismProbabilityLabel = new JLabel("Parasitism occurrence probability:");
-    private JFormattedTextField parasitismProbabilityText = new JFormattedTextField();
-    private JLabel gaussianStandardDeviationLabel = new JLabel("Parasitism normal distribution standard deviation:");
-    private JFormattedTextField gaussianStandardDeviationText = new JFormattedTextField();
-    private JRadioButton validColouringsBox = new JRadioButton("Force only valid colourings", false);
-    private JLabel resultsLabel = new JLabel("Results:");
-    private JLabel timeLabel = new JLabel("Execution time:");
-    private JLabel cpuTimeLabel = new JLabel("CPU execution time:");
-    private JLabel robustnessLabel = new JLabel("Robustness:");
-    private JLabel validLabel = new JLabel("Colouring is valid:");
-    private JButton runButton = new JButton("Run algorithm");
+    private final GraphColouringController controller;
+    private final GraphPanel graphPanel;
+    private final JLabel agentsNumberLabel = new JLabel("Number of artificial nests");
+    private final JFormattedTextField agentsNumberText = new JFormattedTextField();
+    private final JLabel iterationsLabel = new JLabel("Number of iterations to execute:");
+    private final JFormattedTextField iterationsText = new JFormattedTextField();
+    private final JLabel coloursNumLabel = new JLabel("Number of colours:");
+    private final JFormattedTextField coloursNumText = new JFormattedTextField();
+    private final JLabel randomWalkAlfaLabel = new JLabel("Lévy flight alfa (scale) parameter value:");
+    private final JFormattedTextField randomWalkAlfaText = new JFormattedTextField();
+    private final JLabel randomWalkBetaLabel = new JLabel("Lévy flight beta (distribution) parameter value:");
+    private final JFormattedTextField randomWalkBetaText = new JFormattedTextField();
+    private final JLabel parasitismProbabilityLabel = new JLabel("Parasitism occurrence probability:");
+    private final JFormattedTextField parasitismProbabilityText = new JFormattedTextField();
+    private final JLabel gaussianStandardDeviationLabel = new JLabel("Parasitism normal distribution standard deviation:");
+    private final JFormattedTextField gaussianStandardDeviationText = new JFormattedTextField();
+    private final JRadioButton validColouringsBox = new JRadioButton("Force only valid colourings", false);
+    private final JLabel resultsLabel = new JLabel("Results:");
+    private final JLabel timeLabel = new JLabel("Execution time:");
+    private final JLabel cpuTimeLabel = new JLabel("CPU execution time:");
+    private final JLabel robustnessLabel = new JLabel("Robustness:");
+    private final JLabel validLabel = new JLabel("Colouring is valid:");
+    private final JButton runButton = new JButton("Run algorithm");
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("Przycisk kukułka");
         Map<String, Integer> colouring = this.controller.runCuckooSearch((Integer) this.agentsNumberText.getValue(),
                 (Long) this.iterationsText.getValue(), (Integer) this.coloursNumText.getValue(), (Double) this.randomWalkAlfaText.getValue(),
                 (Double) this.randomWalkBetaText.getValue(), (Double) this.parasitismProbabilityText.getValue(),

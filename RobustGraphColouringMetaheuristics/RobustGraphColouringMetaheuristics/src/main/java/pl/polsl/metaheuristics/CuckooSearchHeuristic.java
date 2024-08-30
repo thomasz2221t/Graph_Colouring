@@ -33,13 +33,6 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
                                                final int parasitismNormalDistributionDeviationFactor, final boolean forceHavingValidColouring) {
         this.resetVariables();
         this.maxNumberOfColours = maximalRobustColourNumber;
-//        this.graph = customWeightedGraphHelper.imposeUncertaintyToGraph(this.graph,
-//                GraphConstants.PROPORTION_EDGES_TO_FUZZ,
-//                GraphConstants.LOWER_BOUNDARY_OF_UNCERTAINTY);
-//        //only for testing
-//        customWeightedGraphHelper.savingGraphVisualizationToFile(this.graph,
-//                GraphConstants.GRAPH_VISUALISATION_SAVING_DIRECTORY+"cuckoo.png");
-
         this.init(numberOfAgents);
 
         long i = 0;
@@ -49,17 +42,12 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         long cpuStartTime = threadMxBean.getCurrentThreadCpuTime();
 
         while(i < cuckooSearchMaxIterations) {
-            //Calculating solution using Lévy flight operator
             for(int k=0; k < numberOfAgents; k++) {
-                //wybranie M używając rozkładu Discrete Levi
                 int M = this.choosingVerticesToModifyUsingDiscreteLevyDist(alfaProblemScaleFactor, betaDistributionIndexFactor);
-                //modyfikacja M wierzchołków
                 constructingBestLocalSolution(k, M);
             }
 
-            //Parasitism solution calculation
             for(int k=0; k < numberOfAgents; k++) {
-                //picking number from [0.0, 1.0)
                 double randomNumber = Math.random();
                 if(randomNumber <= parasitismOccurrenceProbability) {
                     int M = this.choosingVerticesToModifyUsingNormalDistribution(this.graph.vertexSet().size(), parasitismNormalDistributionDeviationFactor);
@@ -67,17 +55,14 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
                 }
             }
 
-            //Opracowanie wyników każdej iteracji
             Map<String, Integer> bestColouring = this.evaluateBestCuckooSolution(this.cuckoos);
             if(forceHavingValidColouring) {
-                System.out.println(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring));
                 if(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring))
                     this.verticesColourMap.putAll(bestColouring);
             } else {
                 this.verticesColourMap.putAll(bestColouring);
             }
 
-            //policzenie wartości robustness
             this.robustness = this.calculateRobustness(this.graph, this.verticesColourMap);
             if(this.checkGraphValidityAmongSolidEdges(this.graph, bestColouring)) {
                 this.numberOfCorrectSolutions++;
@@ -88,7 +73,6 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         long cpuEndTime = threadMxBean.getCurrentThreadCpuTime();
         long endTime = System.nanoTime();
 
-        System.out.println("Good colourings: " + numberOfCorrectSolutions);
         this.getMetaheuristicsStatistics(this.graph, this.verticesColourMap, robustness, startTime, cpuStartTime, cpuEndTime, endTime);
         Triple<Long, Long, Boolean> statistics = this.estimateMetaheuristicsStatistics(this.graph, this.verticesColourMap, startTime, cpuStartTime, cpuEndTime, endTime);
         this.systemTime = statistics.getLeft();
@@ -98,36 +82,28 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
     }
 
     private void constructingBestLocalSolution(int k, int M) {
-        //modyfikacja M wierzchołków
         Map<String, Integer> cuckooSolution = cuckoos.get(k).getCuckooGeneticSolution();
         Map<String, Integer> mutatedSolution = this.vertexGeneticMutation(this.graph, cuckooSolution, M);
-        //porównanie rozwiązań, obliczenie funkcji fitnessu obu rozwiązań
         cuckoos.get(k).setCuckooGeneticSolution(this.compareOriginalAndMutatedSolution(cuckooSolution, mutatedSolution, this.graph));
     }
 
     private void init(int numberOfAgents) {
-        //Przygotowanie mapy koloru
         this.initVerticesColourMap(this.graph, this.verticesColourMap);
-        //Przygotowanie agentow
         this.initCuckoos(this.graph, this.cuckoos, numberOfAgents, maxNumberOfColours);
     }
 
     private Map<String, Integer> generateRandomSolution(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, int maxNumberOfColours) {
-        //określenie minimalnej lb kolorow (okreslenie wierzcholka posiadajacego maksymlana ilosc krawedzi a jak nie uda sie to
-        //wybor losowego wierzcholka
         List<String> verticesList = graph.vertexSet().stream().toList();
         String maxNumberOfEdgesVertex = verticesList.stream().max(
                (String v1, String v2) -> Integer.compare(
                        customWeightedGraphHelper.getNeighbourhoodListOfVertex(graph, v1).size(),
                        customWeightedGraphHelper.getNeighbourhoodListOfVertex(graph, v2).size())
                ).orElse(customWeightedGraphHelper.getRandomVertexFromGraph(graph));
-        //generacja losowych wartości kolorów dla każdego wierzchołka
         List<Integer> randomColourValues = new Random()
                 .ints(1, maxNumberOfColours)
                 .limit(verticesList.size())
                 .boxed()
                 .toList();
-        //łaczenie listy wierzcholkow grafu oraz listy wylosowanych wartosci w mape
         Map<String, Integer> randomSolution = IntStream
                 .range(0, verticesList.size())
                 .boxed()
@@ -135,15 +111,12 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         return randomSolution;
     }
 
-    private List<CuckooAgent> initCuckoos(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<CuckooAgent> cuckoos, int numberOfAgents, int maxNumberOfColours) {
+    private void initCuckoos(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, List<CuckooAgent> cuckoos, int numberOfAgents, int maxNumberOfColours) {
         for(int i = 0; i < numberOfAgents; i++) {
             CuckooAgent cuckoo = new CuckooAgent();
-            //wygenerowanie randomowego rozwiązania
             cuckoo.setCuckooGeneticSolution(this.generateRandomSolution(graph, maxNumberOfColours));
-            //przydzielenie mrówce
             cuckoos.add(cuckoo);
         }
-        return cuckoos;
     }
 
     private int choosingVerticesToModifyUsingDiscreteLevyDist(double alfa_ScaleFactor, double beta_IndexFactor) {
@@ -163,11 +136,9 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
 
     private Map<String, Integer> vertexGeneticMutation(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> mapVerticesColours, int mutatingVerticesNumber) {
         List<String> vertexList = graph.vertexSet().stream().toList();
-        //Protecting from overflowing the indexes
         if(mutatingVerticesNumber > graph.vertexSet().size())
             mutatingVerticesNumber = graph.vertexSet().size();
         if(mutatingVerticesNumber > 0) {
-            //generacja losowych indeksów wierzchołków o liczbie M
             List<Integer> randomVerticesIndexes = new Random()
                     .ints(0, mutatingVerticesNumber)
                     .limit(mutatingVerticesNumber)
@@ -182,7 +153,6 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
         return mapVerticesColours;
     }
 
-    //basically counting robustness for all edges
     private double countNumberOfErrorsInColouring(DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph, Map<String, Integer> mapVerticesColours) {
         double graphPenaltiesSum = 0.0;
         for(CustomWeightedGraphHelper.CustomWeightedEdge edge : graph.edgeSet()) {
@@ -205,23 +175,18 @@ public class CuckooSearchHeuristic extends AbstractColouringHeuristic {
 
     private Map<String, Integer> compareOriginalAndMutatedSolution(Map<String, Integer> originalSolution, Map<String, Integer> mutatedSolution,
                                                                    DefaultUndirectedWeightedGraph<String, CustomWeightedEdge> graph) {
-        //obliczenie wartości funkcji fintessu dla oryginalnego kolorowania
         double originalSolutionFitness = this.calculateSolutionFitnessFunction(graph, originalSolution);
-        //obliczenie wartości funkcji fitnessu dla mutowanego kolorowania
         double mutatedSolutionFitness = this.calculateSolutionFitnessFunction(graph, mutatedSolution);
         if(originalSolutionFitness > mutatedSolutionFitness) {
-            return mutatedSolution;//przepisanie do zmiennej klasowej, musi zostać
+            return mutatedSolution;
         }
         return originalSolution;
     }
 
     private Map<String, Integer> evaluateBestCuckooSolution(List<CuckooAgent> cuckoos) {
-        double bestFitnessValue = 0;//cuckoos.get(0).getSolutionFitting();
         int bestSolutionIndex = 0;
         for(int k=1; k < cuckoos.size(); k++) {
-            //if(cuckoos.get(k).getSolutionFitting() < bestFitnessValue) {
                 bestSolutionIndex = k;
-            //}
         }
         return cuckoos.get(bestSolutionIndex).getCuckooGeneticSolution();
     }

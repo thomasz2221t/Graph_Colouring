@@ -6,8 +6,7 @@ public final class CuckooSearchConstants {
 
     public static final int NUMBER_OF_AGENTS = 3;
     public static final long CUCKOO_SEARCH_MAX_ITERATIONS = 10000;
-    public static final double CUCKOO_COLOURING_MINIMAL_ROBUSTNESS = 0.9;
-    public static final int MAXIMAL_ROBUST_COLOUR_NUMBER = 4;
+    public static final int MAXIMAL_ROBUST_COLOUR_NUMBER = 6;
     public static final double ALFA_PROBLEM_SCALE_FACTOR = 1.2;
     public static final double BETA_DISTRIBUTION_INDEX_FACTOR = 0.9;
     public static final double FITNESS_FUNCTION_COLOURING_VALIDITY_FACTOR = 3.5;
